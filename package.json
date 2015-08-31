@@ -1,0 +1,24 @@
+{
+  "name": "Comps",
+  "version": "1.0.0",
+  "description": "Components in server side render.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/index"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/switer/Comps.git"
+  },
+  "keywords": [
+    "components",
+    "server",
+    "render"
+  ],
+  "author": "switer",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/switer/Comps/issues"
+  },
+  "homepage": "https://github.com/switer/Comps"
+}
