@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/switer/Comps/issues"
   },
-  "homepage": "https://github.com/switer/Comps"
+  "homepage": "https://github.com/switer/Comps",
+  "dependencies": {
+    "block-nested": "^1.1.0"
+  }
 }
