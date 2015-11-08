@@ -3,4 +3,13 @@
 var fs = require('fs')
 var Comps = require('../index')
 
-Comps.compile(fs.readFileSync(__dirname + '/index.tpl', 'utf-8'))
+Comps.componentLoader(function (name) {
+    return fs.readFileSync(__dirname + '/c/' + name + '/' + name + '.tpl', 'utf-8')
+})
+var tpl = fs.readFileSync(__dirname + '/index.tpl', 'utf-8')
+console.time('render')
+var html = Comps({
+    template: tpl
+})
+console.timeEnd('render')
+console.log(html)
