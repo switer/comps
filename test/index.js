@@ -9,7 +9,8 @@ Comps.componentLoader(function (name) {
 var tpl = fs.readFileSync(__dirname + '/index.tpl', 'utf-8')
 console.time('render')
 var html = Comps({
-    template: tpl
+    template: tpl,
+    pagelet: 'main.head'
 })
 console.timeEnd('render')
 console.log(html)

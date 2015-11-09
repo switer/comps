@@ -87,6 +87,9 @@ var _tags = {
 			// pagelet patches
 			var patches = this.patches = this.$scope.$patches
 			patches.push(id)
+			if (this.$scope.$root().$pagelet === patches.join('.')) {
+				this.$scope.$shouldRender = true
+			}
 		},
 		render: function () {
 			var atts = Object.keys(this.$attributes)
@@ -98,6 +101,12 @@ var _tags = {
 				}, [])).join(' ') + '>',
 				'</' + this.tagname + '>'
 			]
+		},
+		walk: function () {
+			var ctx = this
+			return this.$el.childNodes.map(function (n) {
+				return ctx.$walk(n, ctx.$scope)
+			}).join('')
 		}
 	},
 	component: {
@@ -112,20 +121,31 @@ var _tags = {
 					if (!/^\$/.test(item)) result.push( item + '="' + ctx.$attributes[item] + '"')
 					return result
 				}, [])).join(' ') + '>',
-				Comps({
-					template: componentLoader.call(this, this.$attributes.$id) || '',
-					children: this.$el.childNodes,
-					scope: this.$scope
-				}),
 				'</' + this.tagname + '>'
-			].join('')
+			]
+		},
+		walk: function () {
+			return Comps({
+				template: componentLoader.call(this, this.$attributes.$id) || '',
+				children: this.$el.childNodes,
+				scope: this.$scope
+			})
 		}
 	}
 }
-function Scope(parent) {
+function Scope(parent, data) {
+	data = data || {}
 	this.$parent = parent || null
+
+	// using as options
+	parent = parent || {}
 	// inherit properties
-	this.$patches = parent && parent.$patches ? parent.$patches.slice() : []
+	this.$patches = parent.$patches ? parent.$patches.slice() : []
+	this.$shouldRender = hasProp(data, 'shouldRender') 
+		? data.shouldRender 
+		: !!parent.$shouldRender
+
+	this.$pagelet = data.pagelet || ''
 }
 Scope.prototype.$root = function () {
 	var root = this
@@ -141,27 +161,29 @@ function Tag(node, isBlock, name, def, raw, scope, walk) {
 	var isScope = !!def.scope
 	var created = def.created
 	var render = def.render
+	var _walk = def.walk
 	var ctx = this
 
 	this.$el = node
 	this.$raw = raw
 	this.$name = name
 	this.$attributes = _getAttributesWithoutTrim(raw)
+
 	if (isScope) {
-		// create scope
+		// create child scope instance
 		this.$scope = new Scope(scope)
 	} else {
+		// inherit parent's scope
 		this.$scope = scope
 	}
+	var $scope = this.$scope
+	this.$walk = walk
 	this.$render = function () {
-		var result = render.call(ctx)
-		if (result instanceof Array) {
-			return result[0] + node.childNodes.map(function (n) {
-				return walk(n, ctx.$scope)
-			}).join('') + result[1] 
-		} else {
-			return result
-		}
+		var willRender = $scope.$shouldRender
+		var result = willRender ? render.call(ctx) : ['','']
+		var walkResult = _walk.call(ctx) || ''
+
+		return result[0] + walkResult + result[1] 
 	}
 	created && created.call(this)
 }
@@ -171,44 +193,45 @@ Tag.prototype.render = function () {
 /**
  * Comps module interfaces
  */
+function walk(node, scope) {
+	var name
+	var isBlock = false
+	var output = ''
+	switch(node.nodeType) {
+		// Root
+		case 1:
+			output += node.childNodes.map(function (n) {
+				return walk(n, scope)
+			}).join('')
+			break
+		// Block Tag
+		case 2:
+			isBlock = true
+		// Self-Closing Tag
+		case 3:
+			var attStr = _trim(isBlock ? node.openHTML : node.outerHTML)
+			name = _getTagNameWithoutTrim(attStr)
+			attStr = attStr.replace(/^\S+\s*/, '')
+			var tag = new Tag(node, isBlock, name, _tags[name], attStr, scope, function (n, s/*node, scope*/) {
+				// render childNodes recursively
+				return walk(n, s)
+			})
+			output += tag.render()
+			break
+		// Text Node
+		case 4:
+			if(scope.$shouldRender) output += node.nodeValue
+			break
+	}
+	return output
+}
 function Comps (options) {
 	options = options || {}
-
-	var vm = this
 	var ast = Parser(options.template)
-	var pagelet = !!options.pagelet
-	var scope = options.scope || new Scope()
-	function walk(node, scope) {
-		var name
-		var isBlock = false
-		var output = ''
-		switch(node.nodeType) {
-			// Root
-			case 1:
-				output += node.childNodes.map(function (n) {
-					return walk(n, scope)
-				}).join('')
-				break
-			// Block Tag
-			case 2:
-				isBlock = true
-			// Self-Closing Tag
-			case 3:
-				var attStr = _trim(isBlock ? node.openHTML : node.outerHTML)
-				name = _getTagNameWithoutTrim(attStr)
-				attStr = attStr.replace(/^\S+\s*/, '')
-				var tag = new Tag(node, isBlock, name, _tags[name], attStr, scope, function (n, scope) {
-					return walk(n, scope)
-				})
-				output += tag.render()
-				break
-			// Text Node
-			case 4:
-				output += node.nodeValue
-				break
-		}
-		return output
-	}
+	var scope = options.scope || new Scope(null, {
+		shouldRender: !options.pagelet,
+		pagelet: options.pagelet
+	})
 	return walk(ast, scope)
 }
 Comps.tag = function (name, def) {
@@ -233,5 +256,10 @@ Comps.config = function (name, value) {
 	}
 }
 module.exports = Comps
-
+function hasProp(o, prop) {
+	return o.hasOwnProperty(prop)
+}
+function isUndef(o) {
+	return o === void(0)
+}
 function noop(){}
