@@ -10,7 +10,7 @@ var tpl = fs.readFileSync(__dirname + '/index.tpl', 'utf-8')
 console.time('render')
 var html = Comps({
     template: tpl,
-    pagelet: 'main.head'
+    // pagelet: 'main.head'
 })
 console.timeEnd('render')
 console.log(html)

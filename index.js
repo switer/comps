@@ -5,6 +5,8 @@
 
 var ASTParser = require('block-ast')
 var ATTParser = require('attribute-parser')
+var util = require('./lib/util')
+
 function warn() {
 	console.log('[COMPS] ' + [].slice.call(arguments).join(' '))
 }
@@ -92,13 +94,10 @@ var _tags = {
 			}
 		},
 		render: function () {
-			var atts = Object.keys(this.$attributes)
 			var ctx = this
+			var attStr = attributeStringify(this.$attributes)
 			return [
-				'<' + [this.tagname, 'data-pageletid="' + this.patches.join('.') + '"'].concat(atts.reduce(function (result, item) {
-					if (!/^\$/.test(item)) result.push( item + '="' + ctx.$attributes[item] + '"')
-					return result
-				}, [])).join(' ') + '>',
+				'<' + this.tagname + ' data-pageletid="' + this.patches.join('.') + '"' + (attStr ? ' ' + attStr : '') + '>',
 				'</' + this.tagname + '>'
 			]
 		},
@@ -112,15 +111,16 @@ var _tags = {
 	component: {
 		created: function () {
 			this.tagname = this.$attributes.$tag || 'div'
+			this.replace = this.$attributes.$replace != 'false'
+			this.merge = this.$attributes.$replace === 'merge'
 		},
 		render: function () {
-			var atts = Object.keys(this.$attributes)
 			var ctx = this
+			var attStr = attributeStringify(this.$attributes)
+
+			if (this.replace) return ['', '']
 			return [
-				'<' + [this.tagname].concat(atts.reduce(function (result, item) {
-					if (!/^\$/.test(item)) result.push( item + '="' + ctx.$attributes[item] + '"')
-					return result
-				}, [])).join(' ') + '>',
+				'<' + this.tagname + (attStr ? ' ' + attStr : '') + '>',
 				'</' + this.tagname + '>'
 			]
 		},
@@ -128,7 +128,8 @@ var _tags = {
 			return Comps({
 				template: componentLoader.call(this, this.$attributes.$id) || '',
 				children: this.$el.childNodes,
-				scope: this.$scope
+				scope: this.$scope,
+				attributes: this.replace && this.merge ? this.$attributes : null
 			})
 		}
 	}
@@ -232,7 +233,22 @@ function Comps (options) {
 		shouldRender: !options.pagelet,
 		pagelet: options.pagelet
 	})
-	return walk(ast, scope)
+	var output = walk(ast, scope)
+	if (options.attributes) {
+		output = output.replace(
+			new RegExp('^(\\s*)<([\\w\\-]+)([^\>]*?)(/?>)', 'm'), 
+			function (m, space, name, attStr, end) {
+				var nodeAtts = ATTParser(attStr)
+				var overrideAtts = {}
+				var attributes = attributeStringify(util.extend({}, nodeAtts, options.attributes), overrideAtts)
+				// merge class
+				if (nodeAtts.class && options.attributes.class) {
+					overrideAtts['class'] = nodeAtts.class + ' ' + options.attributes.class
+				}
+				return space + '<' + name + (attributes ? ' ' + attributes : '') + end
+			})
+	}
+	return output
 }
 Comps.tag = function (name, def) {
 	_tags[name] = def
@@ -256,6 +272,12 @@ Comps.config = function (name, value) {
 	}
 }
 module.exports = Comps
+function attributeStringify(atts) {
+	return Object.keys(atts).reduce(function (result, item) {
+		if (!/^\$/.test(item)) result.push( item + '="' + atts[item] + '"')
+		return result
+	}, []).join(' ')
+}
 function hasProp(o, prop) {
 	return o.hasOwnProperty(prop)
 }

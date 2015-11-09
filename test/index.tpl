@@ -6,4 +6,5 @@
             <class class="head"></class>
         {%/pagelet%}
     {%/pagelet%}
+    {%component $id="header" r-component="header" $replace="merge" class="header-comp"/%}
 </div>
