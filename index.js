@@ -88,7 +88,7 @@ var _tags = {
 		created: function () {
 			this.tagname = this.$attributes.$tag || 'div'
 			var id = this.$attributes.$id
-			if (!id) throw new Error('Pagelet tag need specify the "$id" attribute.')
+			if (!id) throw new Error(wrapTag(this.$name, this.$raw) + ' missing "$id" attribute.')
 			// pagelet patches
 			var patches = this.patches = this.$scope.$patches
 			patches.push(id)
@@ -117,7 +117,7 @@ var _tags = {
 			this.replace = this.$attributes.$replace && this.$attributes.$replace != 'false'
 			this.merge = this.$attributes.$replace === 'merge'
 			var id = this.id = this.$attributes.$id
-			if (!id) throw new Error('Component the "$id" attribute.')
+			if (!id) throw new Error(wrapTag(this.$name, this.$raw) + ' missing "$id" attribute.')
 
 			componentTransform.call(this, id)
 		},
@@ -162,8 +162,8 @@ Scope.prototype.$root = function () {
 	return root
 }
 function Tag(node, isBlock, name, def, raw, scope, walk) {
-	if (isBlock && def.block === false) warn('Tag "' + name + '" must be a block tag.')
-	if (!isBlock && def.block === true) warn('Tag "' + name + '" must be a self-closing tag.')
+	if (isBlock && def.block === false) warn('Tag "' + name + '" must be a block tag. ' + wrapTag(name, raw))
+	if (!isBlock && def.block === true) warn('Tag "' + name + '" must be a self-closing tag. ' + wrapTag(name, raw))
 
 	var isScope = !!def.scope
 	var created = def.created
@@ -218,11 +218,17 @@ function walk(node, scope) {
 			var attStr = _trim(isBlock ? node.openHTML : node.outerHTML)
 			name = _getTagNameWithoutTrim(attStr)
 			attStr = attStr.replace(/^\S+\s*/, '')
-			var tag = new Tag(node, isBlock, name, _tags[name], attStr, scope, function (n, s/*node, scope*/) {
-				// render childNodes recursively
-				return walk(n, s)
-			})
-			output += tag.render()
+			var def = _tags[name]
+
+			if (def){
+				var tag = new Tag(node, isBlock, name, def, attStr, scope, function (n, s/*node, scope*/) {
+					// render childNodes recursively
+					return walk(n, s)
+				})
+				output += tag.render()
+			} else {
+				warn('"' + name + '" is not defined.' + wrapTag(name, attStr))
+			}
 			break
 		// Text Node
 		case 4:
@@ -280,6 +286,10 @@ Comps.config = function (name, value) {
 	}
 }
 module.exports = Comps
+
+function wrapTag (name, raw) {
+	return '"' + _config.openTag + ' ' + name + ' ' + raw + ' ' + _config.closeTag + '"'
+}
 function attributeStringify(atts) {
 	return Object.keys(atts).reduce(function (result, item) {
 		if (!/^\$/.test(item)) result.push( item + '="' + atts[item] + '"')
