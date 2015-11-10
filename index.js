@@ -1,11 +1,13 @@
 'use strict';
 
-// var Tracer = require('debug-trace')
-// Tracer({always: true})
 
 var ASTParser = require('block-ast')
 var ATTParser = require('attribute-parser')
 var util = require('./lib/util')
+
+// debug
+// var Tracer = require('debug-trace')
+// Tracer({always: true})
 
 function warn() {
 	console.log('[COMPS] ' + [].slice.call(arguments).join(' '))
@@ -74,6 +76,7 @@ var Parser = ASTParser(
 	}
 )
 var componentLoader = noop
+var componentTransform = noop
 /**
  * Internal variables
  */
@@ -111,13 +114,16 @@ var _tags = {
 	component: {
 		created: function () {
 			this.tagname = this.$attributes.$tag || 'div'
-			this.replace = this.$attributes.$replace != 'false'
+			this.replace = this.$attributes.$replace && this.$attributes.$replace != 'false'
 			this.merge = this.$attributes.$replace === 'merge'
+			var id = this.id = this.$attributes.$id
+			if (!id) throw new Error('Component the "$id" attribute.')
+
+			componentTransform.call(this, id)
 		},
 		render: function () {
 			var ctx = this
 			var attStr = attributeStringify(this.$attributes)
-
 			if (this.replace) return ['', '']
 			return [
 				'<' + this.tagname + (attStr ? ' ' + attStr : '') + '>',
@@ -126,7 +132,7 @@ var _tags = {
 		},
 		walk: function () {
 			return Comps({
-				template: componentLoader.call(this, this.$attributes.$id) || '',
+				template: componentLoader.call(this, this.id) || '',
 				children: this.$el.childNodes,
 				scope: this.$scope,
 				attributes: this.replace && this.merge ? this.$attributes : null
@@ -183,7 +189,6 @@ function Tag(node, isBlock, name, def, raw, scope, walk) {
 		var willRender = $scope.$shouldRender
 		var result = willRender ? render.call(ctx) : ['','']
 		var walkResult = _walk.call(ctx) || ''
-
 		return result[0] + walkResult + result[1] 
 	}
 	created && created.call(this)
@@ -255,6 +260,9 @@ Comps.tag = function (name, def) {
 }
 Comps.componentLoader = function (loader) {
 	componentLoader = loader
+}
+Comps.componentTransform = function (transform) {
+	componentTransform = transform
 }
 Comps.config = function (name, value) {
 	_config[name] = value
