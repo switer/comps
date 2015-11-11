@@ -65,4 +65,21 @@ Example:
 {% component $id="header" /%}
 ```
 
+Attributes:
+    - $id
+    - $tag
+    - $replace
+
 - **pagelet**
+Example:
+
+```html
+{% pagelet $id="header" $wrap=false /%}
+    <div class="header"></div>
+{%/ pagelet %}
+```
+
+Attributes:
+    - $id
+    - $tag
+    - $wrap

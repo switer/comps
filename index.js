@@ -80,6 +80,8 @@ var Parser = ASTParser(
 )
 var componentLoader = noop
 var componentTransform = noop
+
+var EMPTY_RESULT = ['', '']
 /**
  * Internal variables
  */
@@ -90,6 +92,8 @@ var _tags = {
 		block: true,
 		created: function () {
 			this.tagname = this.$attributes.$tag || 'div'
+			this.nowrap = this.$attributes.$wrap && this.$attributes.$wrap != 'false'
+
 			var id = this.$attributes.$id
 			if (!id) throw new Error(wrapTag(this.$name, this.$raw) + ' missing "$id" attribute.')
 			// pagelet patches
@@ -101,6 +105,8 @@ var _tags = {
 		},
 		render: function () {
 			var ctx = this
+			if (this.nowrap) return EMPTY_RESULT
+
 			var attStr = attributeStringify(this.$attributes)
 			return [
 				'<' + this.tagname + ' data-pageletid="' + this.patches.join('.') + '"' + (attStr ? ' ' + attStr : '') + '>',
@@ -127,7 +133,7 @@ var _tags = {
 		render: function () {
 			var ctx = this
 			var attStr = attributeStringify(this.$attributes)
-			if (this.replace) return ['', '']
+			if (this.replace) return EMPTY_RESULT
 			return [
 				'<' + this.tagname + (attStr ? ' ' + attStr : '') + '>',
 				'</' + this.tagname + '>'
@@ -190,7 +196,7 @@ function Tag(node, isBlock, name, def, raw, scope, walk) {
 	this.$walk = walk
 	this.$render = function () {
 		var willRender = $scope.$shouldRender
-		var result = willRender ? render.call(ctx) : ['','']
+		var result = willRender ? render.call(ctx) : EMPTY_RESULT
 		var walkResult = _walk.call(ctx) || ''
 		return result[0] + walkResult + result[1] 
 	}
