@@ -41,7 +41,7 @@ comps({
 
     * def `<Object>`
         Tag configuration. Options:
-        
+
         - scope   `<Boolean>`  
             Whether create a child-scope for the tag.
 
@@ -69,8 +69,8 @@ comps({
 ## Tags
 
 - **component**
-Example:
 
+Example:
 ```html
 {% component $id="header" /%}
 ```
@@ -82,8 +82,8 @@ Attributes:
     - $replace
 
 - **pagelet**
-Example:
 
+Example:
 ```html
 {% pagelet $id="header" $wrap=false /%}
     <div class="header"></div>
@@ -91,6 +91,7 @@ Example:
 ```
 
 Attributes:
+
     - $id
     - $tag
     - $wrap
