@@ -10,12 +10,22 @@ npm i comps --save
 
 ```js
 var comps = require('comps')
+/**
+ * Custom compoment file loader
+ */
 comps.componentLoader(function (name) {
     return fs.readFileSync(__dirname + '/c/' + name + '/' + name + '.tpl')
 })
+var tpl = '<div>{% component $id="header" /%}</div>'
 comps({
-    template: '<div>{% component $id="header" /%}</div>'
+    template: tpl
 })
+/** 
+ * Optimize
+ */
+var render = comps.compile(tpl)
+
+render()
 ```
 
 ## Render Options
@@ -29,6 +39,7 @@ comps({
 ## API
 
 - **.config(conf)**
+
     * openTag `<String>` 
         Open-tag token, such as "{%"
 
@@ -36,6 +47,7 @@ comps({
         Close-tag token, such as "%}"
 
 - **.tag(name, def)**
+
     name `<String>`
         Tag name, using as "{% xxtag /%}" or "{% xxtag %}{%/ xxtag %}"
 
@@ -58,6 +70,7 @@ comps({
             Call when tag's child template is rendered. Must **return** String.
 
 - **.compile(tpl)**
+
     * tpl `<String>`
         preRender template
     * return `<Function>`
