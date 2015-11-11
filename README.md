@@ -31,27 +31,33 @@ render()
 ## Render Options
 
 - **template** `<String>`
+
     render html template.
 
 - **pagelet** `<String>`
+
     Will renderd pagelet id.
 
 ## API
 
 - **.config(conf)**
 
-    * openTag `<String>` 
+    * openTag `<String>`
+
         Open-tag token, such as "{%"
 
     * closeTag `<String>` 
+
         Close-tag token, such as "%}"
 
 - **.tag(name, def)**
 
-    name `<String>`
+    * name `<String>`
+
         Tag name, using as "{% xxtag /%}" or "{% xxtag %}{%/ xxtag %}"
 
     * def `<Object>`
+
         Tag configuration. Options:
 
         - scope   `<Boolean>`  
@@ -72,7 +78,9 @@ render()
 - **.compile(tpl)**
 
     * tpl `<String>`
+
         preRender template
+
     * return `<Function>`
 
 - **.componentLoader(loader)**
