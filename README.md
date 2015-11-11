@@ -92,6 +92,6 @@ Example:
 
 Attributes:
 
-    - $id
-    - $tag
-    - $wrap
+- $id
+- $tag
+- $wrap
