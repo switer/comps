@@ -41,11 +41,20 @@ comps({
 
     * def `<Object>`
         Tag configuration. Options:
-            - scope   `<Boolean>`  : Whether create a child-scope for the tag.
-            - block   `<Boolean>`  : Whether block tag. Such as: "{%tag%}{%/tag%}".
-            - created `<Function>` : Call when tag is created.
-            - render  `<Function>` : Call when tag is rendered. Must **return** Array with two items, item1 is the open tag, item2 is the close tag. 
-            - walk    `<Function>` : Call when tag's child template is rendered. Must **return** String.
+            - scope   `<Boolean>`  
+                Whether create a child-scope for the tag.
+
+            - block   `<Boolean>`  
+                Whether block tag. Such as: "{%tag%}{%/tag%}".
+
+            - created `<Function>` 
+                Call when tag is created.
+
+            - render  `<Function>` 
+                Call when tag is rendered. Must **return** Array with two items, item1 is the open tag, item2 is the close tag. 
+
+            - walk    `<Function>` 
+                Call when tag's child template is rendered. Must **return** String.
 
 - **.compile(tpl)**
     * tpl `<String>`
@@ -66,6 +75,7 @@ Example:
 ```
 
 Attributes:
+
     - $id
     - $tag
     - $replace
