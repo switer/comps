@@ -1,6 +1,6 @@
 {
   "name": "comps",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Components in server side render.",
   "main": "index.js",
   "scripts": {
@@ -23,7 +23,7 @@
   "homepage": "https://github.com/switer/comps",
   "dependencies": {
     "attribute-parser": "^1.0.0",
-    "block-ast": "^1.0.3"
+    "block-ast": "^1.0.4"
   },
   "devDependencies": {
     "console-trace": "^0.2.1",

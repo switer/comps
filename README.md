@@ -18,13 +18,43 @@ comps({
 })
 ```
 
+## Render Options
 
-## Apis
+- **template** `<String>`
+    render html template.
 
-- **config**
-- **tag**
-- **componentLoader**
-- **componentTransform**
+- **pagelet** `<String>`
+    Will renderd pagelet id.
+
+## API
+
+- **.config(conf)**
+    * openTag `<String>` 
+        Open-tag token, such as "{%"
+
+    * closeTag `<String>` 
+        Close-tag token, such as "%}"
+
+- **.tag(name, def)**
+    * name `<String>`
+        Tag name, using as "{% xxtag /%}" or "{% xxtag %}{%/ xxtag %}"
+
+    * def `<Object>`
+        Tag configuration. Options:
+            - scope   `<Boolean>`  : Whether create a child-scope for the tag.
+            - block   `<Boolean>`  : Whether block tag. Such as: "{%tag%}{%/tag%}".
+            - created `<Function>` : Call when tag is created.
+            - render  `<Function>` : Call when tag is rendered. Must **return** Array with two items, item1 is the open tag, item2 is the close tag. 
+            - walk    `<Function>` : Call when tag's child template is rendered. Must **return** String.
+
+- **.compile(tpl)**
+    * tpl `<String>`
+        preRender template
+    * return `<Function>`
+
+- **.componentLoader(loader)**
+
+- **.componentTransform(transform)**
 
 ## Tags
 

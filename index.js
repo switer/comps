@@ -73,6 +73,9 @@ var Parser = ASTParser(
 	},
 	function isOpenTag(tag, ctx) {
 		return !_block_close_reg.test(tag)
+	},
+	{
+		strict: true // unclosing tag will throw error.
 	}
 )
 var componentLoader = noop
@@ -227,7 +230,7 @@ function walk(node, scope) {
 				})
 				output += tag.render()
 			} else {
-				warn('"' + name + '" is not defined.' + wrapTag(name, attStr))
+				warn('"' + name + '" is not defined. ' + wrapTag(name, attStr))
 			}
 			break
 		// Text Node
@@ -238,28 +241,7 @@ function walk(node, scope) {
 	return output
 }
 function Comps (options) {
-	options = options || {}
-	var ast = Parser(options.template)
-	var scope = options.scope || new Scope(null, {
-		shouldRender: !options.pagelet,
-		pagelet: options.pagelet
-	})
-	var output = walk(ast, scope)
-	if (options.attributes) {
-		output = output.replace(
-			new RegExp('^(\\s*)<([\\w\\-]+)([^\>]*?)(/?>)', 'm'), 
-			function (m, space, name, attStr, end) {
-				var nodeAtts = ATTParser(attStr)
-				var overrideAtts = {}
-				var attributes = attributeStringify(util.extend({}, nodeAtts, options.attributes), overrideAtts)
-				// merge class
-				if (nodeAtts.class && options.attributes.class) {
-					overrideAtts['class'] = nodeAtts.class + ' ' + options.attributes.class
-				}
-				return space + '<' + name + (attributes ? ' ' + attributes : '') + end
-			})
-	}
-	return output
+	return Comps.compile(options.template)(options)
 }
 Comps.tag = function (name, def) {
 	_tags[name] = def
@@ -269,6 +251,21 @@ Comps.componentLoader = function (loader) {
 }
 Comps.componentTransform = function (transform) {
 	componentTransform = transform
+}
+Comps.compile = function (tpl) {
+	if (!tpl && tpl !== '') throw new Error('Unvalid template.')
+	var ast = Parser(tpl)
+
+	return function (options) {
+		options = options || {}
+		var pagelet = options.pagelet
+		var attributes = options.attributes
+		var scope = options.scope || new Scope(null, {
+			shouldRender: !pagelet,
+			pagelet: pagelet
+		})
+		return mergeTag(walk(ast, scope), attributes)
+	}
 }
 Comps.config = function (name, value) {
 	_config[name] = value
@@ -285,8 +282,21 @@ Comps.config = function (name, value) {
 			break
 	}
 }
-module.exports = Comps
-
+function mergeTag (html, atts) {
+	return !atts ? html : html.replace(
+		new RegExp('^(\\s*)<([\\w\\-]+)([^\>]*?)(/?>)', 'm'), 
+		function (m, space, name, attStr, end) {
+			var nodeAtts = ATTParser(attStr)
+			var overrideAtts = {}
+			var attributes = attributeStringify(util.extend({}, nodeAtts, atts), overrideAtts)
+			// merge class
+			if (nodeAtts.class && atts.class) {
+				overrideAtts['class'] = nodeAtts.class + ' ' + atts.class
+			}
+			return space + '<' + name + (attributes ? ' ' + attributes : '') + end
+		}
+	)
+}
 function wrapTag (name, raw) {
 	return '"' + _config.openTag + ' ' + name + ' ' + raw + ' ' + _config.closeTag + '"'
 }
@@ -303,3 +313,5 @@ function isUndef(o) {
 	return o === void(0)
 }
 function noop(){}
+
+module.exports = Comps
