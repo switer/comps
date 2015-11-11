@@ -32,11 +32,11 @@ render()
 
 - **template** `<String>`
 
-    render html template.
+    HTML template.
 
-- **pagelet** `<String>`
+- **pagelet** `<String>` Optional
 
-    Will renderd pagelet id.
+    Render the pagelet tag and it's child only when pagelet option is given. Match with pagelet's `$id` attribute.
 
 ## API
 
