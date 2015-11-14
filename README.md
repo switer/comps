@@ -1,13 +1,13 @@
 # comps
 An components template language in server side render.
 
-## Usage
 
-Install
+## Install
 ```bash
-npm i comps --save
+npm install comps --save
 ```
 
+## Usage
 ```js
 var comps = require('comps')
 /**
@@ -31,85 +31,85 @@ render()
 ## Render Options
 
 #### template 
-    - Type: `<String>`
+- Type: `<String>`
 
-    HTML template.
+HTML template.
 
 #### pagelet 
-    - Type `<String>` 
-    - Optional
+- Type `<String>` 
+- Optional
 
-    Render the pagelet tag and it's child only when pagelet option is given. Match with pagelet's `$id` attribute.
+Render the pagelet tag and it's child only when pagelet option is given. Match with pagelet's `$id` attribute.
 
 ## Methods
 
 #### config(conf)
-    Property of `conf`:
+Property of `conf`:
 
-    **openTag**
-        - Type: `<String>`
-        - Defaylt: "{%"
+**openTag**
+    - Type: `<String>`
+    - Defaylt: "{%"
 
-        Template syntax of open-tag.
+    Template syntax of open-tag.
 
-    **closeTag** 
-        - Type: `<String>` 
-        - Default: "%}"
+**closeTag** 
+    - Type: `<String>` 
+    - Default: "%}"
 
-        Template syntax of close-tag.
+    Template syntax of close-tag.
 
 #### tag(name, def)
 
-    **name** 
-        - Type: `<String>`
+**name** 
+    - Type: `<String>`
 
-        Tag name, using as "{% xxtag /%}" or "{% xxtag %}{%/ xxtag %}"
+    Tag name, using as "{% xxtag /%}" or "{% xxtag %}{%/ xxtag %}"
 
-    **def** 
-        - Type: `<Object>`
+**def** 
+    - Type: `<Object>`
 
-        Tag configuration. Options:
+    Tag configuration. Options:
 
-            - scope `<Boolean>`  
-                Whether create a child-scope for the tag.
+        - scope `<Boolean>`  
+            Whether create a child-scope for the tag.
 
-            - block `<Boolean>`  
-                Whether block tag. Such as: "{%tag%}{%/tag%}".
+        - block `<Boolean>`  
+            Whether block tag. Such as: "{%tag%}{%/tag%}".
 
-            - created `<Function>` 
-                Call when tag is created.
+        - created `<Function>` 
+            Call when tag is created.
 
-            - render `<Function>` 
-                Call when tag is rendered. Must **return** Array with two items, item1 is the open tag, item2 is the close tag. 
+        - render `<Function>` 
+            Call when tag is rendered. Must **return** Array with two items, item1 is the open tag, item2 is the close tag. 
 
-            - walk `<Function>` 
-                Call when tag's child template is rendered. Must **return** String.
+        - walk `<Function>` 
+            Call when tag's child template is rendered. Must **return** String.
 
 #### compile(tpl)
 
-    **tpl** 
-        - Type: `<String>`
+**tpl** 
+    - Type: `<String>`
 
-        preRender template
+    preRender template
 
-    *return*
-        - Type: `<Function>`
+*return*
+    - Type: `<Function>`
 
 #### componentLoader(loader)
 
-    **loader**
-        - Type: `<Function>`
+**loader**
+    - Type: `<Function>`
 
 #### componentTransform(transform)
 
-    **transform**
-        - Type: `<Function>`
+**transform**
+    - Type: `<Function>`
 
 ## Tags
 
 #### component
 
-***Example**:
+**Example**:
 ```html
 {% component $id="header" /%}
 ```
