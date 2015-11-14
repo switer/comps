@@ -47,43 +47,45 @@ Render the pagelet tag and it's child only when pagelet option is given. Match w
 Property of `conf`:
 
 **openTag**
-    - Type: `<String>`
-    - Defaylt: "{%"
+- Type: `<String>`
+- Defaylt: "{%"
 
-    Template syntax of open-tag.
+Template syntax of open-tag.
 
 **closeTag** 
-    - Type: `<String>` 
-    - Default: "%}"
+- Type: `<String>` 
+- Default: "%}"
 
-    Template syntax of close-tag.
+Template syntax of close-tag.
 
 #### tag(name, def)
 
 **name** 
-    - Type: `<String>`
 
-    Tag name, using as "{% xxtag /%}" or "{% xxtag %}{%/ xxtag %}"
+- Type: `<String>`
+
+Tag name, using as "{% xxtag /%}" or "{% xxtag %}{%/ xxtag %}"
 
 **def** 
-    - Type: `<Object>`
 
-    Tag configuration. Options:
+- Type: `<Object>`
 
-        - scope `<Boolean>`  
-            Whether create a child-scope for the tag.
+Tag configuration. Options:
 
-        - block `<Boolean>`  
-            Whether block tag. Such as: "{%tag%}{%/tag%}".
+- scope `<Boolean>`  
+    Whether create a child-scope for the tag.
 
-        - created `<Function>` 
-            Call when tag is created.
+- block `<Boolean>`  
+    Whether block tag. Such as: "{%tag%}{%/tag%}".
 
-        - render `<Function>` 
-            Call when tag is rendered. Must **return** Array with two items, item1 is the open tag, item2 is the close tag. 
+- created `<Function>` 
+    Call when tag is created.
 
-        - walk `<Function>` 
-            Call when tag's child template is rendered. Must **return** String.
+- render `<Function>` 
+    Call when tag is rendered. Must **return** Array with two items, item1 is the open tag, item2 is the close tag. 
+
+- walk `<Function>` 
+        Call when tag's child template is rendered. Must **return** String.
 
 #### compile(tpl)
 
