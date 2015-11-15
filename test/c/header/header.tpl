@@ -1,3 +1,1 @@
-<div class="header">
-    hello world
-</div>
+<div class="header"></div>

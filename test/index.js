@@ -2,6 +2,7 @@
 
 var fs = require('fs')
 var comps = require('../index')
+var assert = require("assert")
 
 comps.componentLoader(function (name) {
     return fs.readFileSync(__dirname + '/c/' + name + '/' + name + '.tpl', 'utf-8')
@@ -9,12 +10,17 @@ comps.componentLoader(function (name) {
 comps.componentTransform(function (name) {
     this.$attributes['r-component'] = 'c-' + name
 })
+describe('#Options', function () {
 
-var tpl = fs.readFileSync(__dirname + '/index.tpl', 'utf-8')
-console.time('render')
-var html = comps({
-    template: tpl,
-    // pagelet: 'main.head'
 })
-console.timeEnd('render')
-console.log(html)
+describe('#Component', function () {
+    it('render component tag', function () {
+        var r = comps({
+            template: '<div>{% component $id="header" /%}</div>'
+        })
+        assert.equal('<div><div r-component="c-header"><div class="header"></div></div></div>', r)
+    })
+})
+describe('#Pagelet', function () {
+
+})

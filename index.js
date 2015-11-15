@@ -80,7 +80,6 @@ var Parser = ASTParser(
 )
 var componentLoader = noop
 var componentTransform = noop
-
 var EMPTY_RESULT = ['', '']
 /**
  * Internal variables
@@ -107,7 +106,7 @@ var _tags = {
 			var ctx = this
 			if (this.nowrap) return EMPTY_RESULT
 
-			var attStr = attributeStringify(this.$attributes)
+			var attStr = util.attributeStringify(this.$attributes)
 			return [
 				'<' + this.tagname + ' data-pageletid="' + this.patches.join('.') + '"' + (attStr ? ' ' + attStr : '') + '>',
 				'</' + this.tagname + '>'
@@ -132,7 +131,7 @@ var _tags = {
 		},
 		render: function () {
 			var ctx = this
-			var attStr = attributeStringify(this.$attributes)
+			var attStr = util.attributeStringify(this.$attributes)
 			if (this.replace) return EMPTY_RESULT
 			return [
 				'<' + this.tagname + (attStr ? ' ' + attStr : '') + '>',
@@ -157,7 +156,7 @@ function Scope(parent, data) {
 	parent = parent || {}
 	// inherit properties
 	this.$patches = parent.$patches ? parent.$patches.slice() : []
-	this.$shouldRender = hasProp(data, 'shouldRender') 
+	this.$shouldRender = util.hasProp(data, 'shouldRender') 
 		? data.shouldRender 
 		: !!parent.$shouldRender
 
@@ -208,44 +207,6 @@ Tag.prototype.render = function () {
 /**
  * Comps module interfaces
  */
-function walk(node, scope) {
-	var name
-	var isBlock = false
-	var output = ''
-	switch(node.nodeType) {
-		// Root
-		case 1:
-			output += node.childNodes.map(function (n) {
-				return walk(n, scope)
-			}).join('')
-			break
-		// Block Tag
-		case 2:
-			isBlock = true
-		// Self-Closing Tag
-		case 3:
-			var attStr = _trim(isBlock ? node.openHTML : node.outerHTML)
-			name = _getTagNameWithoutTrim(attStr)
-			attStr = attStr.replace(/^\S+\s*/, '')
-			var def = _tags[name]
-
-			if (def){
-				var tag = new Tag(node, isBlock, name, def, attStr, scope, function (n, s/*node, scope*/) {
-					// render childNodes recursively
-					return walk(n, s)
-				})
-				output += tag.render()
-			} else {
-				warn('"' + name + '" is not defined. ' + wrapTag(name, attStr))
-			}
-			break
-		// Text Node
-		case 4:
-			if(scope.$shouldRender) output += node.nodeValue
-			break
-	}
-	return output
-}
 function Comps (options) {
 	return Comps.compile(options.template)(options)
 }
@@ -288,13 +249,51 @@ Comps.config = function (name, value) {
 			break
 	}
 }
+function walk(node, scope) {
+	var name
+	var isBlock = false
+	var output = ''
+	switch(node.nodeType) {
+		// Root
+		case 1:
+			output += node.childNodes.map(function (n) {
+				return walk(n, scope)
+			}).join('')
+			break
+		// Block Tag
+		case 2:
+			isBlock = true
+		// Self-Closing Tag
+		case 3:
+			var attStr = _trim(isBlock ? node.openHTML : node.outerHTML)
+			name = _getTagNameWithoutTrim(attStr)
+			attStr = attStr.replace(/^\S+\s*/, '')
+			var def = _tags[name]
+
+			if (def){
+				var tag = new Tag(node, isBlock, name, def, attStr, scope, function (n, s/*node, scope*/) {
+					// render childNodes recursively
+					return walk(n, s)
+				})
+				output += tag.render()
+			} else {
+				warn('"' + name + '" is not defined. ' + wrapTag(name, attStr))
+			}
+			break
+		// Text Node
+		case 4:
+			if(scope.$shouldRender) output += node.nodeValue
+			break
+	}
+	return output
+}
 function mergeTag (html, atts) {
 	return !atts ? html : html.replace(
 		new RegExp('^(\\s*)<([\\w\\-]+)([^\>]*?)(/?>)', 'm'), 
 		function (m, space, name, attStr, end) {
 			var nodeAtts = ATTParser(attStr)
 			var overrideAtts = {}
-			var attributes = attributeStringify(util.extend({}, nodeAtts, atts), overrideAtts)
+			var attributes = util.attributeStringify(util.extend({}, nodeAtts, atts), overrideAtts)
 			// merge class
 			if (nodeAtts.class && atts.class) {
 				overrideAtts['class'] = nodeAtts.class + ' ' + atts.class
@@ -306,18 +305,5 @@ function mergeTag (html, atts) {
 function wrapTag (name, raw) {
 	return '"' + _config.openTag + ' ' + name + ' ' + raw + ' ' + _config.closeTag + '"'
 }
-function attributeStringify(atts) {
-	return Object.keys(atts).reduce(function (result, item) {
-		if (!/^\$/.test(item)) result.push( item + '="' + atts[item] + '"')
-		return result
-	}, []).join(' ')
-}
-function hasProp(o, prop) {
-	return o.hasOwnProperty(prop)
-}
-function isUndef(o) {
-	return o === void(0)
-}
 function noop(){}
-
 module.exports = Comps
