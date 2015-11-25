@@ -14,11 +14,17 @@ describe('#Options', function () {
 
 })
 describe('#Component', function () {
-    it('render component tag', function () {
+    it('Render component tag', function () {
         var r = comps({
             template: '<div>{% component $id="header" /%}</div>'
         })
-        assert.equal('<div><div r-component="c-header"><div class="header"></div></div></div>', r)
+        assert.equal(r, '<div><div r-component="c-header"><div class="header"></div></div></div>')
+    })
+    it('$replace option', function () {
+        var r = comps({
+            template: '<div>{% component $id="header" $replace="true" data-index="{index: 0}" /%}</div>'
+        })
+        assert.equal(r, '<div><div class="header" data-index="{index: 0}" r-component="c-header"></div></div>')
     })
 })
 describe('#Pagelet', function () {

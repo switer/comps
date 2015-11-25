@@ -123,7 +123,7 @@ var _tags = {
 		created: function () {
 			this.tagname = this.$attributes.$tag || 'div'
 			this.replace = this.$attributes.$replace && this.$attributes.$replace != 'false'
-			this.merge = this.$attributes.$replace === 'merge'
+			this.merge = this.$attributes.$replace === 'nomerge' ? false : true // default merge
 			var id = this.id = this.$attributes.$id
 			if (!id) throw new Error(wrapTag(this.$name, this.$raw) + ' missing "$id" attribute.')
 
@@ -132,6 +132,7 @@ var _tags = {
 		render: function () {
 			var ctx = this
 			var attStr = util.attributeStringify(this.$attributes)
+
 			if (this.replace) return EMPTY_RESULT
 			return [
 				'<' + this.tagname + (attStr ? ' ' + attStr : '') + '>',
@@ -139,11 +140,13 @@ var _tags = {
 			]
 		},
 		walk: function () {
+			var reg = /^\$/
+			var attrs = util.attributesExclude(this.$attributes, reg)
 			return Comps({
 				template: componentLoader.call(this, this.id) || '',
 				children: this.$el.childNodes,
 				scope: this.$scope,
-				attributes: this.replace && this.merge ? this.$attributes : null
+				attributes: this.replace && this.merge && Object.keys(attrs) ? attrs : null
 			})
 		}
 	}
