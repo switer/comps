@@ -172,6 +172,9 @@ Scope.prototype.$root = function () {
 	}
 	return root
 }
+Scope.prototype.$rootScope = function () {
+	return this.$scope.$root()
+}
 function Tag(node, isBlock, name, def, raw, scope, walk) {
 	if (isBlock && def.block === false) warn('Tag "' + name + '" must be a block tag. ' + wrapTag(name, raw))
 	if (!isBlock && def.block === true) warn('Tag "' + name + '" must be a self-closing tag. ' + wrapTag(name, raw))

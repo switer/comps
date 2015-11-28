@@ -10,9 +10,6 @@ comps.componentLoader(function (name) {
 comps.componentTransform(function (name) {
     this.$attributes['r-component'] = 'c-' + name
 })
-describe('#Options', function () {
-
-})
 describe('#Component', function () {
     it('Render component tag', function () {
         var r = comps({
@@ -27,6 +24,13 @@ describe('#Component', function () {
         assert.equal(r, '<div><div class="header" data-index="{index: 0}" r-component="c-header"></div></div>')
     })
 })
-describe('#Pagelet', function () {
-
+describe('#Config', function () {
+    it('Custom tag', function () {
+        comps.config('openTag', '<%')
+        comps.config('closeTag', '%>')
+        var r = comps({
+            template: '<div><% component $id="header" /%></div>'
+        })
+        assert.equal(r, '<div><div r-component="c-header"><div class="header"></div></div></div>')
+    })
 })
