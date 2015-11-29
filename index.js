@@ -103,7 +103,6 @@ var _tags = {
 			}
 		},
 		render: function () {
-			var ctx = this
 			if (this.nowrap) return EMPTY_RESULT
 
 			var attStr = util.attributeStringify(this.$attributes)
@@ -130,10 +129,9 @@ var _tags = {
 			componentTransform.call(this, id)
 		},
 		render: function () {
-			var ctx = this
-			var attStr = util.attributeStringify(this.$attributes)
-
 			if (this.replace) return EMPTY_RESULT
+
+			var attStr = util.attributeStringify(this.$attributes)
 			return [
 				'<' + this.tagname + (attStr ? ' ' + attStr : '') + '>',
 				'</' + this.tagname + '>'
@@ -293,17 +291,17 @@ function walk(node, scope) {
 	}
 	return output
 }
-function mergeTag (html, atts) {
-	return !atts ? html : html.replace(
-		new RegExp('^(\\s*)<([\\w\\-]+)([^\>]*?)(/?>)', 'm'), 
+function mergeTag (html, attrs) {
+	return !attrs ? html : html.replace(
+		new RegExp('^(\\s*)<([\\w\\-]+)([^\>]*?)(/?>)', 'm'), // get element open tag html
 		function (m, space, name, attStr, end) {
-			var nodeAtts = ATTParser(attStr)
-			var overrideAtts = {}
-			var attributes = util.attributeStringify(util.extend({}, nodeAtts, atts), overrideAtts)
+			var nodeAttrs = ATTParser(attStr)
+			var attributes = util.extend({}, nodeAttrs, attrs) // passing attributes first
 			// merge class
-			if (nodeAtts.class && atts.class) {
-				overrideAtts['class'] = nodeAtts.class + ' ' + atts.class
+			if (nodeAttrs.class && attrs.class) {
+				attributes['class'] = nodeAttrs.class + ' ' + attrs.class
 			}
+			attributes = util.attributeStringify(attributes)
 			return space + '<' + name + (attributes ? ' ' + attributes : '') + end
 		}
 	)
