@@ -1,5 +1,7 @@
 # comps
-An components template language in server side render.
+[![npm version](https://badge.fury.io/js/comps.svg)](https://badge.fury.io/js/comps)
+
+A components template language of node.js.
 
 
 ## Install
