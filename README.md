@@ -82,10 +82,10 @@ Tag configuration. *Properties*:
     - created `<Function>` 
         Call when tag is created.
     
-    - render `<Function>` 
+    - outer `<Function>` 
         Call when tag is rendered. Must **return** Array with two items, item1 is the open tag, item2 is the close tag. 
 
-    - walk `<Function>` 
+    - inner `<Function>` 
             Call when tag's child template is rendered. Must **return** String.
 
 #### compile(tpl)

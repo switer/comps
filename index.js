@@ -88,6 +88,7 @@ var _tags = {
 	// build in tags
 	pagelet: {
 		scope: true,
+		// validate only
 		block: true,
 		created: function () {
 			this.tagname = this.$attributes.$tag || 'div'
@@ -102,7 +103,7 @@ var _tags = {
 				this.$scope.$shouldRender = true
 			}
 		},
-		render: function () {
+		outer: function () {
 			if (this.nowrap) return EMPTY_RESULT
 
 			var attStr = util.attributeStringify(this.$attributes)
@@ -111,7 +112,7 @@ var _tags = {
 				'</' + this.tagname + '>'
 			]
 		},
-		walk: function () {
+		inner: function () {
 			var ctx = this
 			return this.$el.childNodes.map(function (n) {
 				return ctx.$walk(n, ctx.$scope)
@@ -128,7 +129,7 @@ var _tags = {
 
 			componentTransform.call(this, id)
 		},
-		render: function () {
+		outer: function () {
 			if (this.replace) return EMPTY_RESULT
 
 			var attStr = util.attributeStringify(this.$attributes)
@@ -137,7 +138,7 @@ var _tags = {
 				'</' + this.tagname + '>'
 			]
 		},
-		walk: function () {
+		inner: function () {
 			var reg = /^\$/
 			var attrs = util.attributesExclude(this.$attributes, reg)
 			return Comps({
@@ -146,6 +147,26 @@ var _tags = {
 				scope: this.$scope,
 				attributes: this.replace && this.merge && Object.keys(attrs) ? attrs : null
 			})
+		}
+	},
+	bigpipe: {
+		block: false,
+		created: function () {
+			this.shouldRender = this.$scope.$root().$bigpipe
+			var id = this.id = this.$attributes.$id
+			if (!id) throw new Error(wrapTag(this.$name, this.$raw) + ' missing "$id" attribute.')
+		},
+		outer: function () {
+			if (!this.shouldRender) return EMPTY_RESULT
+			var requires = this.$attributes.$require
+			return [
+				'<!--{%' + 
+					'bigpipe $id="%s" $require="%s"'.replace('%s', this.id).replace('%s', requires),
+				'%}-->'
+			]
+		},
+		inner: function () {
+			return ''
 		}
 	}
 }
@@ -162,6 +183,7 @@ function Scope(parent, data) {
 		: !!parent.$shouldRender
 
 	this.$pagelet = data.pagelet || ''
+	this.$bigpipe = !!data.bigpipe
 }
 Scope.prototype.$root = function () {
 	var root = this
@@ -179,8 +201,8 @@ function Tag(node, isBlock, name, def, raw, scope, walk) {
 
 	var isScope = !!def.scope
 	var created = def.created
-	var render = def.render
-	var _walk = def.walk
+	var outer = def.outer
+	var inner = def.inner
 	var ctx = this
 
 	this.$el = node
@@ -199,8 +221,8 @@ function Tag(node, isBlock, name, def, raw, scope, walk) {
 	this.$walk = walk
 	this.$render = function () {
 		var willRender = $scope.$shouldRender
-		var result = willRender ? render.call(ctx) : EMPTY_RESULT
-		var walkResult = _walk.call(ctx) || ''
+		var result = willRender ? outer.call(ctx) : EMPTY_RESULT
+		var walkResult = inner.call(ctx) || ''
 		return result[0] + walkResult + result[1] 
 	}
 	created && created.call(this)
@@ -233,9 +255,37 @@ Comps.compile = function (tpl) {
 		var attributes = options.attributes
 		var scope = options.scope || new Scope(null, {
 			shouldRender: !pagelet,
-			pagelet: pagelet
+			pagelet: pagelet,
+			bigpipe: !!options.bigpipe
 		})
-		return mergeTag(walk(ast, scope), attributes)
+		return util.mergeTag(walk(ast, scope), attributes)
+	}
+}
+Comps.bigpipe = function (source, options) {
+	source = Comps(source, {
+		bigpipe: true,
+		template: source
+	})
+	var onchunk = options.chunk
+	var bigpipeParts = source.split(/<!--\{%bigpipe $id="[\w\-\$]*" $require="[\w\-\$\,]*"%\}-->/)
+	var chunks = []
+	source.replace(/<!--\{%bigpipe $id="([\w\-\$]*)" $require="([\w\-\$\,]*)"%\}-->/gm, function (m, id, requires) {
+		chunks.push({
+			id: id,
+			requires: requires.trim().split
+		})
+	})
+	var finalChunk = bigpipeParts.pop()
+	var readyDatas = []
+	var chunkPointer = 0
+	function BigPipe() {
+		this.$data = {}
+	}
+	BigPipe.prototype.$set = function (key, value) {
+		this.$data[key] = value
+	}
+	return function () {
+		return new BigPipe()
 	}
 }
 Comps.config = function (name, value) {
@@ -291,21 +341,9 @@ function walk(node, scope) {
 	}
 	return output
 }
-function mergeTag (html, attrs) {
-	return !attrs ? html : html.replace(
-		new RegExp('^(\\s*)<([\\w\\-]+)([^\>]*?)(/?>)', 'm'), // get element open tag html
-		function (m, space, name, attStr, end) {
-			var nodeAttrs = ATTParser(attStr)
-			var attributes = util.extend({}, nodeAttrs, attrs) // passing attributes first
-			// merge class
-			if (nodeAttrs.class && attrs.class) {
-				attributes['class'] = nodeAttrs.class + ' ' + attrs.class
-			}
-			attributes = util.attributeStringify(attributes)
-			return space + '<' + name + (attributes ? ' ' + attributes : '') + end
-		}
-	)
-}
+/**
+ * For log
+ */
 function wrapTag (name, raw) {
 	return '"' + _config.openTag + ' ' + name + ' ' + raw + ' ' + _config.closeTag + '"'
 }

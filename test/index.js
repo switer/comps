@@ -66,7 +66,15 @@ describe('Tags: component', function () {
         })
         assert.equal(r, '<div><div class="header header2" data-index="{index: 0}" data-name="header" r-component="c-header"></div></div>')
     })
-
+})
+describe('Tags: bigpipe', function () {
+    it('$replace option', function () {
+        var r = comps({
+            bigpipe: true,
+            template: '<div>{% bigpipe $id="header" $require="a,b,c" /%}</div>'
+        })
+        assert.equal(r, '<div><!--{%bigpipe $id="header" $require="a,b,c"%}--></div>')
+    })
 })
 
 
