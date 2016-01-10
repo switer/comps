@@ -1,0 +1,1 @@
+<div class="content">{% include $request="./button.tpl" /%}</div>

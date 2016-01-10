@@ -46,6 +46,11 @@ HTML template.
 
 Render the pagelet tag and it's child only when pagelet option is given. Match with pagelet's `$id` attribute.
 
+#### include 
+- Type: `<String>`
+
+Inline external HTML template into current template.
+
 ## Methods
 
 #### config(conf)
@@ -76,7 +81,7 @@ Tag name, using as *"{% xxtag /%}"* or *"{% xxtag %}{%/ xxtag %}"*
 - Type: `<Object>`
 Tag configuration. *Properties*:
 
-    - scope `<Boolean>`  
+    - scope `<Boolean>`|`<Function>`  
         Whether create a child-scope for the tag.
         
     - block `<Boolean>`  
@@ -106,6 +111,11 @@ preRender template
 **loader**
 - Type: `<Function>`
 
+#### fileLoader(loader)
+
+**loader**
+- Type: `<Function>`
+
 #### componentTransform(transform)
 
 **transform**
@@ -129,7 +139,7 @@ preRender template
 
 **Example**:
 ```html
-{% pagelet $id="header" $wrap=false /%}
+{% pagelet $id="header" $wrap=false %}
     <div class="header"></div>
 {%/ pagelet %}
 ```
