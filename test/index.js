@@ -105,6 +105,14 @@ describe('Tags: include', function () {
         })
         assert.equal(r, '<div class="container"><div class="case 3"><div class="content" r-component="c-content"><button class="content-button">name</button></div></div></div>')
     })
+    it('Using with pagelet', function () {
+        var r = comps({
+            context: __dirname,
+            pagelet: 'content',
+            template: '<div class="container">{% include $request="tpls/include-case-4.tpl" /%}</div>'
+        })
+        assert.equal(r.trim(), '<div class="case 4"><div class="content" r-component="c-content"><button class="content-button">name</button></div></div>')
+    })
 })
 
 

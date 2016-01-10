@@ -35,7 +35,7 @@ function _genRegStr (str) {
 	return '\\' + str.split('').join('\\')
 }
 function _genBlockCloseReg () {
-	return new RegExp(_open_tag_reg_str + '/[\\s\\S]+?' + _close_tag_reg_str, 'm')
+	return new RegExp(_open_tag_reg_str + '\\s*/[\\s\\S]+?' + _close_tag_reg_str, 'm')
 }
 function _genSelfCloseReg () {
 	return new RegExp(_open_tag_reg_str + '[\\s\\S]+?/' + _close_tag_reg_str, 'm')
@@ -97,14 +97,14 @@ var _tags = {
 		},
 		created: function () {
 			this.tagname = this.$attributes.$tag || 'div'
-			this.nowrap = this.$attributes.$wrap && this.$attributes.$wrap != 'false'
+			this.nowrap = this.$attributes.$wrap && this.$attributes.$wrap == 'false'
 
 			var id = this.$attributes.$id
 			if (!id) throw new Error(wrapTag(this.$name, this.$raw) + ' missing "$id" attribute.')
 			// pagelet patches
 			var patches = this.patches = this.$scope.$patches
 			patches.push(id)
-			if (this.$scope.$root().$pagelet === patches.join('.')) {
+			if (this.$scope.$pagelet === patches.join('.')) {
 				this.$scope.$shouldRender = true
 			}
 		},
@@ -172,7 +172,7 @@ var _tags = {
 
 			var request = this.request = this.$attributes.$request
 			if (!request) {
-				throw new Error('Can\'t request "', request, '" under "', this.$scope.$context, '"')
+				throw new Error('Can\'t request "' + request + '" under "' + this.$scope.$context + '"')
 			}
 		},
 		render: function () {
