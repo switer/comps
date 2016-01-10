@@ -1,16 +1,18 @@
-'use strict';
-
-var path = require('path')
-var ASTParser = require('block-ast')
-var ATTParser = require('attribute-parser')
-var util = require('./lib/util')
+'use strict'
 
 // debug
 // var Tracer = require('debug-trace')
 // Tracer({always: true})
 
+var path = require('path')
+var ASTParser = require('block-ast')
+var ATTParser = require('attribute-parser')
+var util = require('./lib/util')
+var Scope = require('./lib/scope')
+var BigPipe = require('./lib/BigPipe')
+
 function warn() {
-	console.log('[COMPS] ' + [].slice.call(arguments).join(' '))
+	console.log('[Comps][WARN]: ' + [].slice.call(arguments).join(' '))
 }
 /**
  * Comps's config
@@ -82,6 +84,8 @@ var componentLoader = noop
 var fileLoader = noop
 var componentTransform = noop
 var EMPTY_RESULT = ['', '']
+var EMPTY_STRING = ''
+var CHUNK_SPLITER = '<!--{% chunk /%}-->'
 /**
  * Internal variables
  */
@@ -186,21 +190,25 @@ var _tags = {
 				scope: this.$scope
 			})
 		}
+	},
+	chunk: {
+		block: false,
+		created: function () {
+			var rootScope = this.$scope.$root()
+			var id = this.$attributes.$id
+			var requires = this.$attributes.$require.trim()
+			rootScope.$chunks.push({
+				id: id || '',
+				requires: requires ? requires.split(/\s*,\s*/m) : []
+			})
+		},
+		render: function () {
+			return [CHUNK_SPLITER, '']
+		},
+		walk: function () {
+			return EMPTY_STRING
+		}
 	}
-}
-function Scope(parent, data) {
-	util.extend(this, parent, data)
-	this.$parent = parent || null
-}
-Scope.prototype.$root = function () {
-	var root = this
-	while(root.$parent) {
-		root = root.$parent
-	}
-	return root
-}
-Scope.prototype.$rootScope = function () {
-	return this.$scope.$root()
 }
 function Tag(node, isBlock, name, def, raw, scope, walk) {
 
@@ -223,7 +231,7 @@ function Tag(node, isBlock, name, def, raw, scope, walk) {
 
 	if (scopeOpt) {
 		// create child scope instance
-		this.$scope = new Scope(scope)
+		this.$scope = new Scope(null, scope)
 		if (util.type(scopeOpt) == 'function') {
 			// tag's facade method of scope 
 			scopeOpt.call(this, this.$scope)
@@ -271,12 +279,30 @@ Comps.compile = function (tpl) {
 	return function (options) {
 		options = options || {}
 		var pagelet = options.pagelet
+		var shouldRender = !pagelet
 		var attributes = options.attributes
-		var scope = options.scope || new Scope(null, {
-			'$shouldRender': !pagelet,
+		var scope = options.scope || new Scope({
+			'$shouldRender': shouldRender,
 			'$pagelet': pagelet
 		})
-		if (options.context) scope.$context = options.context
+		/**
+		 * write "$shouldRender" property to external passing scope
+		 */
+		if (!util.hasProp(scope, '$shouldRender')) {
+			scope.$shouldRender = shouldRender
+		}
+		/**
+		 * write "$pagelet" property to external passing scope
+		 */
+		if (!util.hasProp(scope, '$pagelet') && pagelet) {
+			scope.$pagelet = pagelet
+		}
+		/**
+		 * Write "$context" property to scope if context option given
+		 */
+		if (options.context) {
+			scope.$context = options.context
+		}
 		return mergeTag(walk(ast, scope), attributes)
 	}
 }
@@ -285,7 +311,7 @@ Comps.config = function (name, value) {
 	switch (name) {
 		case 'openTag':
 		case 'closeTag':
-			// static
+			// generate regexp object when config changed
 			_open_tag_reg_str = _genRegStr(_config.openTag)
 			_close_tag_reg_str = _genRegStr(_config.closeTag)
 			_block_close_reg = _genBlockCloseReg()
@@ -293,6 +319,36 @@ Comps.config = function (name, value) {
 			_wildcard_reg = _genWildcardReg()
 			_trim_reg = _genTrimReg()
 			break
+	}
+}
+Comps.bigpipe = function (source, options) {
+	var scope = new Scope({
+		$chunks: []
+	})
+	var tmp = Comps(util.extend({}, options, {
+		scope: scope,
+		chunk: true,
+		template: source
+	}))
+	var cparts = tmp.split(CHUNK_SPLITER)
+	var chunks = scope.$chunks
+	var total = chunks.length
+	if (total) {
+		chunks.forEach(function (item, i) {
+			var content = cparts[i]
+			if (i == total - 1) content += cparts[total]
+			item.content = content
+		})
+	} else {
+		chunks = [{
+			id: '',
+			requires: [],
+			content: cparts[0]
+		}]
+	}
+	// todo if chunks is empty
+	return function() {
+		return new BigPipe(chunks.slice())
 	}
 }
 function walk(node, scope) {

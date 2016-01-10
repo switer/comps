@@ -57,7 +57,14 @@ describe('Tags: pagelet', function () {
     it('Render nested pagelet', function () {
         var r = comps({
             pagelet: 'header.content',
-            template: '<div>{% pagelet $id="header" %}{% pagelet $id="content" %}<div class="header-content"></div>{%/pagelet%}{%/pagelet%}</div>'
+            template: '<div>{% pagelet $id="header" %}{% pagelet $id="content" %}<div class="header-content"></div>{%/pagelet%}{% pagelet $id="content" %}<div class="header-content2"></div>{%/pagelet%}{%/pagelet%}</div>'
+        })
+        assert.equal(r, '<div data-pageletid="header.content"><div class="header-content"></div></div><div data-pageletid="header.content"><div class="header-content2"></div></div>')
+    })
+    it('Render nested pagelet with another pagelets', function () {
+        var r = comps({
+            pagelet: 'header.content',
+            template: '{% pagelet $id="content" %}<div class="another-content"></div>{%/pagelet%}<div>{% pagelet $id="header" %}{% pagelet $id="content" %}<div class="header-content"></div>{%/pagelet%}{% pagelet $id="content2" %}<div class="header-content2"></div>{%/pagelet%}{%/pagelet%}</div>'
         })
         assert.equal(r, '<div data-pageletid="header.content"><div class="header-content"></div></div>')
     })
