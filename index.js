@@ -170,7 +170,7 @@ var _tags = {
 				? this.$scope.$context
 				: process.cwd()
 
-			var request = this.request = this.$attributes.$request
+			var request = this.request = this.$attributes.$path
 			if (!request) {
 				throw new Error('Can\'t request "' + request + '" under "' + this.$scope.$context + '"')
 			}

@@ -46,11 +46,6 @@ HTML template.
 
 Render the pagelet tag and it's child only when pagelet option is given. Match with pagelet's `$id` attribute.
 
-#### include 
-- Type: `<String>`
-
-Inline external HTML template into current template.
-
 ## Methods
 
 #### config(conf)
@@ -148,3 +143,14 @@ preRender template
 - $id
 - $tag
 - $wrap
+
+#### include 
+
+Inline external HTML template into current template.
+
+```html
+{% include $path="header" /%}
+```
+
+**Attributes**:
+- $path

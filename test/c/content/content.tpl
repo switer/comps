@@ -1,1 +1,1 @@
-<div class="content">{% include $request="./button.tpl" /%}</div>
+<div class="content">{% include $path="./button.tpl" /%}</div>
