@@ -1,0 +1,1 @@
+<div class="case 3">{% component $id="content" $replace=true /%}</div>

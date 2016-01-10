@@ -4,6 +4,7 @@
 A components template language of node.js.
 
 
+
 ## Install
 ```bash
 npm install comps --save
@@ -75,7 +76,7 @@ Tag name, using as *"{% xxtag /%}"* or *"{% xxtag %}{%/ xxtag %}"*
 - Type: `<Object>`
 Tag configuration. *Properties*:
 
-    - scope `<Boolean>`  
+    - scope `<Boolean>`|`<Function>`  
         Whether create a child-scope for the tag.
         
     - block `<Boolean>`  
@@ -84,10 +85,10 @@ Tag configuration. *Properties*:
     - created `<Function>` 
         Call when tag is created.
     
-    - outer `<Function>` 
+    - render `<Function>` 
         Call when tag is rendered. Must **return** Array with two items, item1 is the open tag, item2 is the close tag. 
 
-    - inner `<Function>` 
+    - walk `<Function>` 
             Call when tag's child template is rendered. Must **return** String.
 
 #### compile(tpl)
@@ -101,6 +102,11 @@ preRender template
 - Type: `<Function>`
 
 #### componentLoader(loader)
+
+**loader**
+- Type: `<Function>`
+
+#### fileLoader(loader)
 
 **loader**
 - Type: `<Function>`
@@ -128,7 +134,7 @@ preRender template
 
 **Example**:
 ```html
-{% pagelet $id="header" $wrap=false /%}
+{% pagelet $id="header" $wrap=false %}
     <div class="header"></div>
 {%/ pagelet %}
 ```
@@ -137,3 +143,14 @@ preRender template
 - $id
 - $tag
 - $wrap
+
+#### include 
+
+Inline external HTML template into current template.
+
+```html
+{% include $path="header" /%}
+```
+
+**Attributes**:
+- $path
