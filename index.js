@@ -104,7 +104,7 @@ var _tags = {
 				this.$scope.$shouldRender = true
 			}
 		},
-		render: function () {
+		outer: function () {
 			if (this.nowrap) return EMPTY_RESULT
 
 			var attStr = util.attributeStringify(this.$attributes)
@@ -113,7 +113,7 @@ var _tags = {
 				'</' + this.tagname + '>'
 			]
 		},
-		walk: function () {
+		inner: function () {
 			var ctx = this
 			return this.$el.childNodes.map(function (n) {
 				return ctx.$walk(n, ctx.$scope)
@@ -131,7 +131,7 @@ var _tags = {
 
 			componentTransform.call(this, id)
 		},
-		render: function () {
+		outer: function () {
 			if (this.replace) return EMPTY_RESULT
 
 			var attStr = util.attributeStringify(this.$attributes)
@@ -140,7 +140,7 @@ var _tags = {
 				'</' + this.tagname + '>'
 			]
 		},
-		walk: function () {
+		inner: function () {
 			var reg = /^\$/
 			var attrs = util.attributesExclude(this.$attributes, reg)
 			var resolveInfo = componentLoader.call(this, this.id)
@@ -171,10 +171,10 @@ var _tags = {
 				throw new Error('Can\'t request "' + request + '" under "' + this.$scope.$context + '"')
 			}
 		},
-		render: function () {
+		outer: function () {
 			return EMPTY_RESULT
 		},
-		walk: function () {
+		inner: function () {
 			var resolveInfo = fileLoader.call(this, this.request, this.context)
 			return Comps({
 				context: path.dirname(resolveInfo.request),
@@ -194,12 +194,12 @@ var _tags = {
 				requires: requires ? requires.split(/\s*,\s*/m) : []
 			})
 		},
-		render: function () {
+		outer: function () {
 			return this.$scope.$chunk
 				? [CHUNK_SPLITER, '']
 				: EMPTY_RESULT
 		},
-		walk: function () {
+		inner: function () {
 			return EMPTY_STRING
 		}
 	}
