@@ -1,5 +1,6 @@
 # comps
 [![npm version](https://badge.fury.io/js/comps.svg)](https://badge.fury.io/js/comps)
+[![travis-ci](https://travis-ci.org/switer/comps)](https://travis-ci.org/switer/comps.svg?branch=master)
 
 A components template language of node.js.
 
