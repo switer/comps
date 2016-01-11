@@ -223,6 +223,21 @@ Comps.fileLoader = function (loader) {
 Comps.componentTransform = function (transform) {
 	componentTransform = transform
 }
+Comps.config = function (name, value) {
+	config[name] = value
+	switch (name) {
+		case 'openTag':
+		case 'closeTag':
+			// generate regexp object when config changed
+			_open_tag_reg_str = _genRegStr(config.openTag)
+			_close_tag_reg_str = _genRegStr(config.closeTag)
+			_block_close_reg = _genBlockCloseReg()
+			_self_close_reg = _genSelfCloseReg()
+			_wildcard_reg = _genWildcardReg()
+			_trim_reg = _genTrimReg()
+			break
+	}
+}
 Comps.compile = function (tpl) {
 	if (!tpl && tpl !== '') throw new Error('Unvalid template.')
 	var ast = Parser(tpl)
@@ -263,21 +278,6 @@ Comps.compile = function (tpl) {
 		return tagUtil.merge(walk(ast, scope), attributes)
 	}
 }
-Comps.config = function (name, value) {
-	config[name] = value
-	switch (name) {
-		case 'openTag':
-		case 'closeTag':
-			// generate regexp object when config changed
-			_open_tag_reg_str = _genRegStr(config.openTag)
-			_close_tag_reg_str = _genRegStr(config.closeTag)
-			_block_close_reg = _genBlockCloseReg()
-			_self_close_reg = _genSelfCloseReg()
-			_wildcard_reg = _genWildcardReg()
-			_trim_reg = _genTrimReg()
-			break
-	}
-}
 Comps.bcompile = function (source, options) {
 	var scope = new Scope({
 		$chunks: []
@@ -313,6 +313,7 @@ Comps.bigpipe = function (source, options) {
 	var creator = Comps.bcompile(source, options)
 	return creator()
 }
+Comps.Scope = Scope
 function walk(node, scope) {
 	var name
 	var isBlock = false
