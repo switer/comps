@@ -5,8 +5,9 @@ var comps = require('../index')
 
 describe('Bigpipe', function () {
     it('Using bcompile', function (done) {
-        var creator = comps.bcompile('{%include $path="tpls/bigpipe-case-1.tpl"/%}', {
-            context: __dirname
+        var creator = comps.bcompile({
+            context: __dirname,
+            template: '{%include $path="tpls/bigpipe-case-1.tpl"/%}'
         })
         var bp = creator()
         var chunks = {
@@ -23,8 +24,9 @@ describe('Bigpipe', function () {
         })
     })
     it('Using bcompile without chunk', function (done) {
-        var creator = comps.bcompile('{%include $path="tpls/bigpipe-case-2.tpl"/%}', {
-            context: __dirname
+        var creator = comps.bcompile({
+            context: __dirname,
+            template: '{%include $path="tpls/bigpipe-case-2.tpl"/%}'
         })
         var bp = creator()
         var result = '<div><div class="header" r-component="c-header"></div><div class="list">list</div>\n</div>'
@@ -39,8 +41,9 @@ describe('Bigpipe', function () {
         })
     })
     it('Require data', function (done) {
-        var creator = comps.bcompile('{%include $path="tpls/bigpipe-case-3.tpl"/%}', {
-            context: __dirname
+        var creator = comps.bcompile({
+            context: __dirname,
+            template: '{%include $path="tpls/bigpipe-case-3.tpl"/%}'
         })
         var bp = creator()
         var chunks = {
@@ -62,8 +65,9 @@ describe('Bigpipe', function () {
         })
     })
     it('set() method', function (done) {
-        var creator = comps.bcompile('{%include $path="tpls/bigpipe-case-4.tpl"/%}', {
-            context: __dirname
+        var creator = comps.bcompile({
+            context: __dirname,
+            template: '{%include $path="tpls/bigpipe-case-4.tpl"/%}'
         })
         var bp = creator()
         var chunks = {
@@ -89,8 +93,9 @@ describe('Bigpipe', function () {
         })
     })
     it('endChunk() method', function (done) {
-        var creator = comps.bcompile('{%include $path="tpls/bigpipe-case-5.tpl"/%}', {
-            context: __dirname
+        var creator = comps.bcompile({
+            context: __dirname,
+            template: '{%include $path="tpls/bigpipe-case-5.tpl"/%}'
         })
         var bp = creator()
         var chunks = {
@@ -115,8 +120,9 @@ describe('Bigpipe', function () {
         })
     })
     it('end() method', function (done) {
-        var creator = comps.bcompile('{%include $path="tpls/bigpipe-case-5.tpl"/%}', {
-            context: __dirname
+        var creator = comps.bcompile({
+            context: __dirname,
+            template: '{%include $path="tpls/bigpipe-case-5.tpl"/%}'
         })
         var bp = creator()
         var result = '<div><div class="header" r-component="c-header"></div><div class="list">list</div>\n</div>'

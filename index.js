@@ -278,14 +278,13 @@ Comps.compile = function (tpl) {
 		return tagUtil.merge(walk(ast, scope), attributes)
 	}
 }
-Comps.bcompile = function (source, options) {
+Comps.bcompile = function (options) {
 	var scope = new Scope({
 		$chunks: []
 	})
 	var temp = Comps(util.extend({}, options, {
 		chunk: true,	// will convert chunk tag to chunk_spliter otherwise empty 
-		scope: scope,
-		template: source
+		scope: scope
 	}))
 	var cparts = temp.split(CHUNK_SPLITER)
 	var chunks = scope.$chunks
@@ -309,8 +308,8 @@ Comps.bcompile = function (source, options) {
 		return new BigPipe(chunks.slice())
 	}
 }
-Comps.bigpipe = function (source, options) {
-	var creator = Comps.bcompile(source, options)
+Comps.bigpipe = function (options) {
+	var creator = Comps.bcompile(options)
 	return creator()
 }
 Comps.Scope = Scope
