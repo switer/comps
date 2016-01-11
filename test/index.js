@@ -2,8 +2,8 @@
 
 var fs = require('fs')
 var path = require('path')
+var assert = require('assert')
 var comps = require('../index')
-var assert = require("assert")
 
 comps.componentLoader(function (name) {
     var fpath = __dirname + '/c/' + name + '/' + name + '.tpl'
@@ -46,6 +46,7 @@ describe('Class-Methods: config()', function () {
         comps.config('closeTag', '%}')
     })
 })
+
 describe('Tags: pagelet', function () {
     it('Render pagelet by id', function () {
         var r = comps({
@@ -122,4 +123,5 @@ describe('Tags: include', function () {
     })
 })
 
+require('./spec-bigpipe.js')
 
