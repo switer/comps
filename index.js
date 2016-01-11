@@ -189,10 +189,13 @@ var _tags = {
 			var rootScope = this.$scope.$root()
 			var id = this.$attributes.$id
 			var requires = this.$attributes.$require.trim()
-			rootScope.$chunks.push({
-				id: id || '',
-				requires: requires ? requires.split(/\s*,\s*/m) : []
-			})
+			
+			if (this.$scope.$chunk && rootScope.$chunks) {
+				rootScope.$chunks.push({
+					id: id || '',
+					requires: requires ? requires.split(/\s*,\s*/m) : []
+				})
+			}
 		},
 		outer: function () {
 			return this.$scope.$chunk

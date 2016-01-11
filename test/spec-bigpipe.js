@@ -137,4 +137,11 @@ describe('Bigpipe', function () {
         })
         bp.end()
     })
+    it('Normal render but with chunk tag', function () {
+        var result = comps({
+            context: __dirname,
+            template: '{%include $path="tpls/bigpipe-case-5.tpl"/%}'
+        })
+        assert.equal(result, '<div><div class="header" r-component="c-header"></div><div class="list">list</div>\n</div>')
+    })
 })
