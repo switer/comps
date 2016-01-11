@@ -8,24 +8,19 @@ var path = require('path')
 var ASTParser = require('block-ast')
 var ATTParser = require('attribute-parser')
 var util = require('./lib/util')
+var tagUtil = require('./lib/tag-util')
 var Scope = require('./lib/scope')
 var BigPipe = require('./lib/BigPipe')
-
-function warn() {
-	console.log('[Comps][WARN]: ' + [].slice.call(arguments).join(' '))
-}
+var Tag = require('./lib/tag')
+var config = require('./lib/config')
 /**
  * Comps's config
  */
-var _config = {
-	openTag: '{%',
-	closeTag: '%}'
-}
 /**
  * Private match regexps or reg-strings
  */
-var _open_tag_reg_str = _genRegStr(_config.openTag)
-var _close_tag_reg_str = _genRegStr(_config.closeTag)
+var _open_tag_reg_str = _genRegStr(config.openTag)
+var _close_tag_reg_str = _genRegStr(config.closeTag)
 var _wildcard_reg = _genWildcardReg()
 var _block_close_reg = _genBlockCloseReg()
 var _self_close_reg = _genSelfCloseReg()
@@ -58,10 +53,7 @@ function _getTagNameWithoutTrim(c) {
 	return c.match(/\S+/)[0]
 }
 function _getAttributes(c) {
-	return _getAttributesWithoutTrim(_trim(c))
-}
-function _getAttributesWithoutTrim(c) {
-	return ATTParser(c)
+	return ATTParser(_trim(c))
 }
 /**
  * Singleton parser instance
@@ -104,7 +96,7 @@ var _tags = {
 			this.nowrap = this.$attributes.$wrap && this.$attributes.$wrap == 'false'
 
 			var id = this.$attributes.$id
-			if (!id) throw new Error(wrapTag(this.$name, this.$raw) + ' missing "$id" attribute.')
+			if (!id) throw new Error(tagUtil.wrap(this.$name, this.$raw) + ' missing "$id" attribute.')
 			// pagelet patches
 			var patches = this.patches = this.$scope.$patches
 			patches.push(id)
@@ -135,7 +127,7 @@ var _tags = {
 			this.replace = this.$attributes.$replace && this.$attributes.$replace != 'false'
 			this.merge = this.$attributes.$replace === 'nomerge' ? false : true // default merge
 			var id = this.id = this.$attributes.$id
-			if (!id) throw new Error(wrapTag(this.$name, this.$raw) + ' missing "$id" attribute.')
+			if (!id) throw new Error(tagUtil.wrap(this.$name, this.$raw) + ' missing "$id" attribute.')
 
 			componentTransform.call(this, id)
 		},
@@ -203,57 +195,16 @@ var _tags = {
 			})
 		},
 		render: function () {
-			return [CHUNK_SPLITER, '']
+			return this.$scope.$chunk
+				? [CHUNK_SPLITER, '']
+				: EMPTY_RESULT
 		},
 		walk: function () {
 			return EMPTY_STRING
 		}
 	}
 }
-function Tag(node, isBlock, name, def, raw, scope, walk) {
 
-	if (isBlock && def.block === false) 
-		warn('Tag "' + name + '" should not a self-closing tag. ' + wrapTag(name, raw))
-	
-	if (!isBlock && def.block === true) 
-		warn('Tag "' + name + '" must be a self-closing tag. ' + wrapTag(name, raw))
-
-	var scopeOpt = def.scope
-	var created = def.created
-	var render = def.render
-	var _walk = def.walk
-	var ctx = this
-
-	this.$el = node
-	this.$raw = raw
-	this.$name = name
-	this.$attributes = _getAttributesWithoutTrim(raw)
-
-	if (scopeOpt) {
-		// create child scope instance
-		this.$scope = new Scope(null, scope)
-		if (util.type(scopeOpt) == 'function') {
-			// tag's facade method of scope 
-			scopeOpt.call(this, this.$scope)
-		}
-	} else {
-		// inherit parent's scope
-		this.$scope = scope
-	}
-
-	var $scope = this.$scope
-	this.$walk = walk
-	this.$render = function () {
-		var willRender = $scope.$shouldRender
-		var result = willRender ? render.call(ctx) : EMPTY_RESULT
-		var walkResult = _walk.call(ctx) || ''
-		return result[0] + walkResult + result[1] 
-	}
-	created && created.call(this)
-}
-Tag.prototype.render = function () {
-	return this.$render()
-}
 /**
  * Comps module interfaces
  */
@@ -303,17 +254,23 @@ Comps.compile = function (tpl) {
 		if (options.context) {
 			scope.$context = options.context
 		}
-		return mergeTag(walk(ast, scope), attributes)
+		/**
+		 * Write "$context" property to scope if context option given
+		 */
+		if (options.chunk) {
+			scope.$chunk = !!options.chunk
+		}
+		return tagUtil.merge(walk(ast, scope), attributes)
 	}
 }
 Comps.config = function (name, value) {
-	_config[name] = value
+	config[name] = value
 	switch (name) {
 		case 'openTag':
 		case 'closeTag':
 			// generate regexp object when config changed
-			_open_tag_reg_str = _genRegStr(_config.openTag)
-			_close_tag_reg_str = _genRegStr(_config.closeTag)
+			_open_tag_reg_str = _genRegStr(config.openTag)
+			_close_tag_reg_str = _genRegStr(config.closeTag)
 			_block_close_reg = _genBlockCloseReg()
 			_self_close_reg = _genSelfCloseReg()
 			_wildcard_reg = _genWildcardReg()
@@ -321,18 +278,19 @@ Comps.config = function (name, value) {
 			break
 	}
 }
-Comps.bigpipe = function (source, options) {
+Comps.bcompile = function (source, options) {
 	var scope = new Scope({
 		$chunks: []
 	})
-	var tmp = Comps(util.extend({}, options, {
+	var temp = Comps(util.extend({}, options, {
+		chunk: true,	// will convert chunk tag to chunk_spliter otherwise empty 
 		scope: scope,
-		chunk: true,
 		template: source
 	}))
-	var cparts = tmp.split(CHUNK_SPLITER)
+	var cparts = temp.split(CHUNK_SPLITER)
 	var chunks = scope.$chunks
 	var total = chunks.length
+
 	if (total) {
 		chunks.forEach(function (item, i) {
 			var content = cparts[i]
@@ -350,6 +308,10 @@ Comps.bigpipe = function (source, options) {
 	return function() {
 		return new BigPipe(chunks.slice())
 	}
+}
+Comps.bigpipe = function (source, options) {
+	var creator = Comps.bcompile(source, options)
+	return creator()
 }
 function walk(node, scope) {
 	var name
@@ -379,7 +341,7 @@ function walk(node, scope) {
 				})
 				output += tag.render()
 			} else {
-				warn('"' + name + '" is not defined. ' + wrapTag(name, attStr))
+				util.warn('"' + name + '" is not defined. ' + tagUtil.wrap(name, attStr))
 			}
 			break
 		// Text Node
@@ -388,24 +350,6 @@ function walk(node, scope) {
 			break
 	}
 	return output
-}
-function mergeTag (html, attrs) {
-	return !attrs ? html : html.replace(
-		new RegExp('^(\\s*)<([\\w\\-]+)([^\>]*?)(/?>)', 'm'), // get element open tag html
-		function (m, space, name, attStr, end) {
-			var nodeAttrs = ATTParser(attStr)
-			var attributes = util.extend({}, nodeAttrs, attrs) // passing attributes first
-			// merge class
-			if (nodeAttrs.class && attrs.class) {
-				attributes['class'] = nodeAttrs.class + ' ' + attrs.class
-			}
-			attributes = util.attributeStringify(attributes)
-			return space + '<' + name + (attributes ? ' ' + attributes : '') + end
-		}
-	)
-}
-function wrapTag (name, raw) {
-	return '"' + _config.openTag + ' ' + name + ' ' + raw + ' ' + _config.closeTag + '"'
 }
 function noop(){}
 module.exports = Comps
