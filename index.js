@@ -13,6 +13,9 @@ var Scope = require('./lib/scope')
 var BigPipe = require('./lib/BigPipe')
 var Tag = require('./lib/tag')
 var config = require('./lib/config')
+var EMPTY_RESULT = ['', '']
+var EMPTY_STRING = ''
+var CHUNK_SPLITER = '<!--{% chunk /%}-->'
 /**
  * Comps's config
  */
@@ -74,10 +77,8 @@ var Parser = ASTParser(
 )
 var componentLoader = noop
 var fileLoader = noop
-var componentTransform = noop
-var EMPTY_RESULT = ['', '']
-var EMPTY_STRING = ''
-var CHUNK_SPLITER = '<!--{% chunk /%}-->'
+var transforms = []
+
 /**
  * Internal variables
  */
@@ -129,7 +130,12 @@ var _tags = {
 			var id = this.id = this.$attributes.$id
 			if (!id) throw new Error(tagUtil.wrap(this.$name, this.$raw) + ' missing "$id" attribute.')
 
-			componentTransform.call(this, id)
+			if (transforms.length) {
+				var that = this
+				transforms.forEach(function (fn) {
+					fn && fn.call(that, id)
+				})
+			}
 		},
 		outer: function () {
 			if (this.replace) return EMPTY_RESULT
@@ -189,7 +195,7 @@ var _tags = {
 			var rootScope = this.$scope.$root()
 			var id = this.$attributes.$id
 			var requires = this.$attributes.$require.trim()
-			
+
 			if (this.$scope.$chunk && rootScope.$chunks) {
 				rootScope.$chunks.push({
 					id: id || '',
@@ -223,8 +229,8 @@ Comps.componentLoader = function (loader) {
 Comps.fileLoader = function (loader) {
 	fileLoader = loader
 }
-Comps.componentTransform = function (transform) {
-	componentTransform = transform
+Comps.componentTransform = function (fn) {
+	transforms.push(fn)
 }
 Comps.config = function (name, value) {
 	config[name] = value
