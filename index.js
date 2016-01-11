@@ -93,7 +93,7 @@ var _tags = {
 		},
 		created: function () {
 			this.tagname = this.$attributes.$tag || 'div'
-			this.nowrap = this.$attributes.$wrap && this.$attributes.$wrap == 'false'
+			this.nowrap = !this.$scope.$pagelet || (this.$attributes.$wrap && this.$attributes.$wrap == 'false')
 
 			var id = this.$attributes.$id
 			if (!id) throw new Error(tagUtil.wrap(this.$name, this.$raw) + ' missing "$id" attribute.')
