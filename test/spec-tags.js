@@ -46,6 +46,12 @@ describe('Tags: component', function () {
         })
         assert.equal(r, '<div><div class="header header2" data-index="{index: 0}" data-name="header" r-component="c-header"></div></div>')
     })
+    it('No merged attributes', function () {
+        var r = comps({
+            template: '<div>{% component $id="header" $replace="nomerge" data-index="{index: 0}" class="header2" data-name="header" /%}</div>'
+        })
+        assert.equal(r, '<div><div class="header"></div></div>')
+    })
 })
 describe('Tags: include', function () {
     it('Request relative path', function () {

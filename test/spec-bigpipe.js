@@ -64,7 +64,7 @@ describe('Bigpipe', function () {
             bp.flush()
         })
     })
-    it('set() method', function (done) {
+    it('set():key-value', function (done) {
         var creator = comps.bcompile({
             context: __dirname,
             template: '{%include $path="tpls/bigpipe-case-4.tpl"/%}'
@@ -92,6 +92,58 @@ describe('Bigpipe', function () {
             assert.equal(bp.data.list, list)
         })
     })
+    it('set():Object', function (done) {
+        var creator = comps.bcompile({
+            context: __dirname,
+            template: '{%include $path="tpls/bigpipe-case-4.tpl"/%}'
+        })
+        var bp = creator()
+        var chunks = {
+            0: '<div><div class="header" r-component="c-header"></div>',
+            1: '<div class="list">list</div>\n</div>'
+        }
+        var cid = 0
+        bp.on('chunk', function (chunk) {
+            assert.equal(chunk, chunks[cid++])
+        })
+        bp.on('end', function () {
+            if (cid !== 2) throw new Error('Not all chunks done.')
+            done()
+        })
+
+        setTimeout(function () {
+            var list = []
+            bp.set({
+                header: 'title',
+                list: list
+            })
+            assert.equal(bp.data.header, 'title')
+            assert.equal(bp.data.list, list)
+        })
+    })
+    it('set():Array', function (done) {
+        var creator = comps.bcompile({
+            context: __dirname,
+            template: '{%include $path="tpls/bigpipe-case-4.tpl"/%}'
+        })
+        var bp = creator()
+        var chunks = {
+            0: '<div><div class="header" r-component="c-header"></div>',
+            1: '<div class="list">list</div>\n</div>'
+        }
+        var cid = 0
+        bp.on('chunk', function (chunk) {
+            assert.equal(chunk, chunks[cid++])
+        })
+        bp.on('end', function () {
+            if (cid !== 2) throw new Error('Not all chunks done.')
+            done()
+        })
+        setTimeout(function () {
+            bp.set(['header', 'list'])
+        })
+    })
+
     it('endChunk() method', function (done) {
         var creator = comps.bcompile({
             context: __dirname,
@@ -119,6 +171,7 @@ describe('Bigpipe', function () {
             assert.equal(bp.data.header, 'title')
         })
     })
+
     it('end() method', function (done) {
         var creator = comps.bcompile({
             context: __dirname,
