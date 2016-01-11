@@ -1,29 +1,29 @@
-'use strict';
-
-var path = require('path')
-var ASTParser = require('block-ast')
-var ATTParser = require('attribute-parser')
-var util = require('./lib/util')
+'use strict'
 
 // debug
 // var Tracer = require('debug-trace')
 // Tracer({always: true})
 
-function warn() {
-	console.log('[COMPS] ' + [].slice.call(arguments).join(' '))
-}
+var path = require('path')
+var ASTParser = require('block-ast')
+var ATTParser = require('attribute-parser')
+var util = require('./lib/util')
+var tagUtil = require('./lib/tag-util')
+var Scope = require('./lib/scope')
+var BigPipe = require('./lib/bigpipe')
+var Tag = require('./lib/tag')
+var config = require('./lib/config')
+var EMPTY_RESULT = ['', '']
+var EMPTY_STRING = ''
+var CHUNK_SPLITER = '<!--{% chunk /%}-->'
 /**
  * Comps's config
  */
-var _config = {
-	openTag: '{%',
-	closeTag: '%}'
-}
 /**
  * Private match regexps or reg-strings
  */
-var _open_tag_reg_str = _genRegStr(_config.openTag)
-var _close_tag_reg_str = _genRegStr(_config.closeTag)
+var _open_tag_reg_str = _genRegStr(config.openTag)
+var _close_tag_reg_str = _genRegStr(config.closeTag)
 var _wildcard_reg = _genWildcardReg()
 var _block_close_reg = _genBlockCloseReg()
 var _self_close_reg = _genSelfCloseReg()
@@ -56,10 +56,7 @@ function _getTagNameWithoutTrim(c) {
 	return c.match(/\S+/)[0]
 }
 function _getAttributes(c) {
-	return _getAttributesWithoutTrim(_trim(c))
-}
-function _getAttributesWithoutTrim(c) {
-	return ATTParser(c)
+	return ATTParser(_trim(c))
 }
 /**
  * Singleton parser instance
@@ -80,8 +77,8 @@ var Parser = ASTParser(
 )
 var componentLoader = noop
 var fileLoader = noop
-var componentTransform = noop
-var EMPTY_RESULT = ['', '']
+var transforms = []
+
 /**
  * Internal variables
  */
@@ -97,10 +94,10 @@ var _tags = {
 		},
 		created: function () {
 			this.tagname = this.$attributes.$tag || 'div'
-			this.nowrap = this.$attributes.$wrap && this.$attributes.$wrap == 'false'
+			this.nowrap = !this.$scope.$pagelet || (this.$attributes.$wrap && this.$attributes.$wrap == 'false')
 
 			var id = this.$attributes.$id
-			if (!id) throw new Error(wrapTag(this.$name, this.$raw) + ' missing "$id" attribute.')
+			if (!id) throw new Error(tagUtil.wrap(this.$name, this.$raw) + ' missing "$id" attribute.')
 			// pagelet patches
 			var patches = this.patches = this.$scope.$patches
 			patches.push(id)
@@ -108,7 +105,7 @@ var _tags = {
 				this.$scope.$shouldRender = true
 			}
 		},
-		render: function () {
+		outer: function () {
 			if (this.nowrap) return EMPTY_RESULT
 
 			var attStr = util.attributeStringify(this.$attributes)
@@ -117,7 +114,7 @@ var _tags = {
 				'</' + this.tagname + '>'
 			]
 		},
-		walk: function () {
+		inner: function () {
 			var ctx = this
 			return this.$el.childNodes.map(function (n) {
 				return ctx.$walk(n, ctx.$scope)
@@ -131,11 +128,16 @@ var _tags = {
 			this.replace = this.$attributes.$replace && this.$attributes.$replace != 'false'
 			this.merge = this.$attributes.$replace === 'nomerge' ? false : true // default merge
 			var id = this.id = this.$attributes.$id
-			if (!id) throw new Error(wrapTag(this.$name, this.$raw) + ' missing "$id" attribute.')
+			if (!id) throw new Error(tagUtil.wrap(this.$name, this.$raw) + ' missing "$id" attribute.')
 
-			componentTransform.call(this, id)
+			if (transforms.length) {
+				var that = this
+				transforms.forEach(function (fn) {
+					fn && fn.call(that, id)
+				})
+			}
 		},
-		render: function () {
+		outer: function () {
 			if (this.replace) return EMPTY_RESULT
 
 			var attStr = util.attributeStringify(this.$attributes)
@@ -144,7 +146,7 @@ var _tags = {
 				'</' + this.tagname + '>'
 			]
 		},
-		walk: function () {
+		inner: function () {
 			var reg = /^\$/
 			var attrs = util.attributesExclude(this.$attributes, reg)
 			var resolveInfo = componentLoader.call(this, this.id)
@@ -175,10 +177,10 @@ var _tags = {
 				throw new Error('Can\'t request "' + request + '" under "' + this.$scope.$context + '"')
 			}
 		},
-		render: function () {
+		outer: function () {
 			return EMPTY_RESULT
 		},
-		walk: function () {
+		inner: function () {
 			var resolveInfo = fileLoader.call(this, this.request, this.context)
 			return Comps({
 				context: path.dirname(resolveInfo.request),
@@ -186,66 +188,32 @@ var _tags = {
 				scope: this.$scope
 			})
 		}
-	}
-}
-function Scope(parent, data) {
-	util.extend(this, parent, data)
-	this.$parent = parent || null
-}
-Scope.prototype.$root = function () {
-	var root = this
-	while(root.$parent) {
-		root = root.$parent
-	}
-	return root
-}
-Scope.prototype.$rootScope = function () {
-	return this.$scope.$root()
-}
-function Tag(node, isBlock, name, def, raw, scope, walk) {
+	},
+	chunk: {
+		block: false,
+		created: function () {
+			var rootScope = this.$scope.$root()
+			var id = this.$attributes.$id
+			var requires = this.$attributes.$require.trim()
 
-	if (isBlock && def.block === false) 
-		warn('Tag "' + name + '" should not a self-closing tag. ' + wrapTag(name, raw))
-	
-	if (!isBlock && def.block === true) 
-		warn('Tag "' + name + '" must be a self-closing tag. ' + wrapTag(name, raw))
-
-	var scopeOpt = def.scope
-	var created = def.created
-	var render = def.render
-	var _walk = def.walk
-	var ctx = this
-
-	this.$el = node
-	this.$raw = raw
-	this.$name = name
-	this.$attributes = _getAttributesWithoutTrim(raw)
-
-	if (scopeOpt) {
-		// create child scope instance
-		this.$scope = new Scope(scope)
-		if (util.type(scopeOpt) == 'function') {
-			// tag's facade method of scope 
-			scopeOpt.call(this, this.$scope)
+			if (this.$scope.$chunk && rootScope.$chunks) {
+				rootScope.$chunks.push({
+					id: id || '',
+					requires: requires ? requires.split(/\s*,\s*/m) : []
+				})
+			}
+		},
+		outer: function () {
+			return this.$scope.$chunk
+				? [CHUNK_SPLITER, '']
+				: EMPTY_RESULT
+		},
+		inner: function () {
+			return EMPTY_STRING
 		}
-	} else {
-		// inherit parent's scope
-		this.$scope = scope
 	}
+}
 
-	var $scope = this.$scope
-	this.$walk = walk
-	this.$render = function () {
-		var willRender = $scope.$shouldRender
-		var result = willRender ? render.call(ctx) : EMPTY_RESULT
-		var walkResult = _walk.call(ctx) || ''
-		return result[0] + walkResult + result[1] 
-	}
-	created && created.call(this)
-}
-Tag.prototype.render = function () {
-	return this.$render()
-}
 /**
  * Comps module interfaces
  */
@@ -261,8 +229,23 @@ Comps.componentLoader = function (loader) {
 Comps.fileLoader = function (loader) {
 	fileLoader = loader
 }
-Comps.componentTransform = function (transform) {
-	componentTransform = transform
+Comps.componentTransform = function (fn) {
+	transforms.push(fn)
+}
+Comps.config = function (name, value) {
+	config[name] = value
+	switch (name) {
+		case 'openTag':
+		case 'closeTag':
+			// generate regexp object when config changed
+			_open_tag_reg_str = _genRegStr(config.openTag)
+			_close_tag_reg_str = _genRegStr(config.closeTag)
+			_block_close_reg = _genBlockCloseReg()
+			_self_close_reg = _genSelfCloseReg()
+			_wildcard_reg = _genWildcardReg()
+			_trim_reg = _genTrimReg()
+			break
+	}
 }
 Comps.compile = function (tpl) {
 	if (!tpl && tpl !== '') throw new Error('Unvalid template.')
@@ -271,30 +254,74 @@ Comps.compile = function (tpl) {
 	return function (options) {
 		options = options || {}
 		var pagelet = options.pagelet
+		var shouldRender = !pagelet
 		var attributes = options.attributes
-		var scope = options.scope || new Scope(null, {
-			'$shouldRender': !pagelet,
+		var scope = options.scope || new Scope({
+			'$shouldRender': shouldRender,
 			'$pagelet': pagelet
 		})
-		if (options.context) scope.$context = options.context
-		return mergeTag(walk(ast, scope), attributes)
+		/**
+		 * write "$shouldRender" property to external passing scope
+		 */
+		if (!util.hasProp(scope, '$shouldRender')) {
+			scope.$shouldRender = shouldRender
+		}
+		/**
+		 * write "$pagelet" property to external passing scope
+		 */
+		if (!util.hasProp(scope, '$pagelet') && pagelet) {
+			scope.$pagelet = pagelet
+		}
+		/**
+		 * Write "$context" property to scope if context option given
+		 */
+		if (options.context) {
+			scope.$context = options.context
+		}
+		/**
+		 * Write "$context" property to scope if context option given
+		 */
+		if (options.chunk) {
+			scope.$chunk = !!options.chunk
+		}
+		return tagUtil.merge(walk(ast, scope), attributes)
 	}
 }
-Comps.config = function (name, value) {
-	_config[name] = value
-	switch (name) {
-		case 'openTag':
-		case 'closeTag':
-			// static
-			_open_tag_reg_str = _genRegStr(_config.openTag)
-			_close_tag_reg_str = _genRegStr(_config.closeTag)
-			_block_close_reg = _genBlockCloseReg()
-			_self_close_reg = _genSelfCloseReg()
-			_wildcard_reg = _genWildcardReg()
-			_trim_reg = _genTrimReg()
-			break
+Comps.bcompile = function (options) {
+	var scope = new Scope({
+		$chunks: []
+	})
+	var temp = Comps(util.extend({}, options, {
+		chunk: true,	// will convert chunk tag to chunk_spliter otherwise empty 
+		scope: scope
+	}))
+	var cparts = temp.split(CHUNK_SPLITER)
+	var chunks = scope.$chunks
+	var total = chunks.length
+
+	if (total) {
+		chunks.forEach(function (item, i) {
+			var content = cparts[i]
+			if (i == total - 1) content += cparts[total]
+			item.content = content
+		})
+	} else {
+		chunks = [{
+			id: '',
+			requires: [],
+			content: cparts[0]
+		}]
+	}
+	// todo if chunks is empty
+	return function() {
+		return new BigPipe(chunks.slice())
 	}
 }
+Comps.bigpipe = function (options) {
+	var creator = Comps.bcompile(options)
+	return creator()
+}
+Comps.Scope = Scope
 function walk(node, scope) {
 	var name
 	var isBlock = false
@@ -323,7 +350,7 @@ function walk(node, scope) {
 				})
 				output += tag.render()
 			} else {
-				warn('"' + name + '" is not defined. ' + wrapTag(name, attStr))
+				util.warn('"' + name + '" is not defined. ' + tagUtil.wrap(name, attStr))
 			}
 			break
 		// Text Node
@@ -332,24 +359,6 @@ function walk(node, scope) {
 			break
 	}
 	return output
-}
-function mergeTag (html, attrs) {
-	return !attrs ? html : html.replace(
-		new RegExp('^(\\s*)<([\\w\\-]+)([^\>]*?)(/?>)', 'm'), // get element open tag html
-		function (m, space, name, attStr, end) {
-			var nodeAttrs = ATTParser(attStr)
-			var attributes = util.extend({}, nodeAttrs, attrs) // passing attributes first
-			// merge class
-			if (nodeAttrs.class && attrs.class) {
-				attributes['class'] = nodeAttrs.class + ' ' + attrs.class
-			}
-			attributes = util.attributeStringify(attributes)
-			return space + '<' + name + (attributes ? ' ' + attributes : '') + end
-		}
-	)
-}
-function wrapTag (name, raw) {
-	return '"' + _config.openTag + ' ' + name + ' ' + raw + ' ' + _config.closeTag + '"'
 }
 function noop(){}
 module.exports = Comps
