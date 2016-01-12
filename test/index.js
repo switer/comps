@@ -27,6 +27,8 @@ comps.componentTransform(function (name) {
 })
 
 require('./spec-classmethods.js')
-require('./spec-tags.js')
+require('./spec-component.js')
+require('./spec-pagelet.js')
+require('./spec-include.js')
 require('./spec-bigpipe.js')
 
