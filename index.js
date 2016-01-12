@@ -125,8 +125,9 @@ var _tags = {
 		created: function () {
 			this.tagname = this.$attributes.$tag || 'div'
 
-			this.replace = this.$attributes.$replace && this.$attributes.$replace != 'false'
+			this.replace = !this.$attributes.$replace || (this.$attributes.$replace && this.$attributes.$replace != 'false')
 			this.merge = this.$attributes.$replace === 'nomerge' ? false : true // default merge
+
 			var id = this.id = this.$attributes.$id
 			if (!id) throw new Error(tagUtil.wrap(this.$name, this.$raw) + ' missing "$id" attribute.')
 
@@ -161,7 +162,7 @@ var _tags = {
 				context: path.dirname(request),
 				template: content || '',
 				children: this.$el.childNodes,
-				scope: this.$scope,
+				scope: this.$scope.$clone(),
 				attributes: this.replace && this.merge && Object.keys(attrs) ? attrs : null
 			})
 		}

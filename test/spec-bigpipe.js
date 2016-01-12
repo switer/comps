@@ -82,7 +82,6 @@ describe('Bigpipe', function () {
             if (cid !== 2) throw new Error('Not all chunks done.')
             done()
         })
-
         bp.data.header = ''
         bp.set('header', 'title')
         assert.equal(bp.data.header, 'title')
@@ -110,7 +109,6 @@ describe('Bigpipe', function () {
             if (cid !== 2) throw new Error('Not all chunks done.')
             done()
         })
-
         setTimeout(function () {
             var list = []
             bp.set({

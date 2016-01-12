@@ -30,7 +30,7 @@ describe('Tags: pagelet', function () {
             pagelet: 'footerlink',
             template: '{% component $id="footer"/%}'
         })
-        assert.equal(r, '<div data-pageletid="footerlink"><a href="" class="link"></a></div>')
+        assert.equal(r, '<div data-pageletid="footerlink" r-component="c-footer"><a href="" class="link"></a></div>')
     })
 })
 describe('Tags: component', function () {
@@ -82,5 +82,12 @@ describe('Tags: include', function () {
             template: '<div class="container">{% include $path="tpls/include-case-4.tpl" /%}</div>'
         })
         assert.equal(r.trim(), '<div class="case 4"><div class="content" r-component="c-content"><button class="content-button">name</button></div></div>')
+    })
+    it('Using with component', function () {
+        var r = comps({
+            context: __dirname,
+            template: '{% include $path="tpls/include-case-5.tpl" /%}'
+        })
+        assert.equal(r.trim(), '<div class="case 5"><div class="main" r-component="c-main"><div class="header" r-component="c-header"></div><section class="part"></section>\n</div></div>')
     })
 })
