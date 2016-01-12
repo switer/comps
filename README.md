@@ -41,6 +41,7 @@ render()
 - **[Options](#options)**
 - **[Using Pagelet](#using-pagelet)**
 - **[Using Bigpipe](#using-bigpipe)**
+- **[Reusable Template](#reusable-template)**
 - **[Comps Tags](#comps-tags)**
 
 ## Class Methods
@@ -218,6 +219,57 @@ End `bigpipe` manually, it flush remain chunks immediately but ignore waiting de
 ```js
 bp.end()
 ```
+
+## Reusable Template
+Assume a component template `./index.tpl` as below:
+```html
+<div class="index">
+    {% pagelet $id="list" %}
+    <ul class="list">
+        <li>item</li>
+    </ul>
+    {% /pagelet %}
+</div>
+```
+If you need do client-side render and reuse the template in some case,  you can use [comps-loader](https://github.com/switer/comps-loader) .
+> Note: "comps-loader" is  comps's template loader  for webpack, and you need do some configuration when use it. See [detail](https://github.com/switer/comps-loader#usage)
+
+Load template in client-side when using comps-loader:
+```js
+// load full template file
+var tpl = require('./index.tpl')
+// load pagelet of template
+var pagelet = require('!!comps!./index.tpl?pagelet=list')
+```
+Pagelet result =>
+```html
+<ul class="list">
+    <li>item</li>
+</ul>
+```
+
+If you don't like `require('!!comps!./index.tpl?pagelet=list')`, you can create a independ file for list template:
+`./index.tpl`
+```html
+<div class="index">
+    {% include $path="./list.tpl" /%}
+</div>
+```
+`./list.tpl`:
+```html
+<ul class="list">
+    <li>item</li>
+</ul>
+```
+
+Load templates:
+```js
+// load full template file
+var tpl = require('./index.tpl')
+// load list template
+var pagelet = require('./index.tpl')
+```
+
 
 ## Options
 Options of rendering template with `comps(options)`:
