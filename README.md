@@ -264,7 +264,7 @@ It will call `componentLoader` to loader component file by id "header".
 **Tag attributes**:
 - **$id**            Id name of the component for load component file.
 - **$tag**          Specify tag name of component wrapper tag. *Optional*
-- **$replace**   Using component wrapper tag of not, default `true`. Set to "`nomerge`" will not copy attributes to template container element, otherwise all attribute from the component tag will copy to template container element and overwrite exist attribute.*Optional* 
+- **$replace**   Using component wrapper tag of not, default `false`. Set to "`nomerge`" will not copy attributes to template container element, otherwise all attribute from the component tag will copy to template container element and overwrite exist attribute.*Optional* 
 
 ### pagelet
 Pagelet tag is using to render template only that  included in pagelet if `pagelet` option is given. 
@@ -279,8 +279,8 @@ If pagelet of rendering options is "header", it will render the template include
 
 **Attributes**:
 - **$id**           Id name of the pagelet for matching.
-- **$tag**         Specify tag name of pagelet wrapper tag. *Optional*
-- **$wrap**      Using pagelet wrapper tag of not, default `true`. *Optional*
+- **$tag**          Specify tag name of pagelet wrapper tag. *Optional*
+- **$wrap**         Using pagelet wrapper tag of not, default `false`. *Optional*
 
 ### include 
 Inline another HTML template file into current template.
