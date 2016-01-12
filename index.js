@@ -151,13 +151,14 @@ var _tags = {
 			var reg = /^\$/
 			var attrs = util.attributesExclude(this.$attributes, reg)
 			var resolveInfo = componentLoader.call(this, this.id)
-			var request = util.type(resolveInfo) == 'object' 
-				? resolveInfo.request
-				: ''
-			var content = util.type(resolveInfo) == 'object'
-				? resolveInfo.content
-				: resolveInfo
+			var isObj = util.type(resolveInfo) == 'object'
+			var isStr = util.type(resolveInfo) == 'string'
+			var request = isObj ? resolveInfo.request : ''
+			var content = isObj ? resolveInfo.content : (resolveInfo || '')
 
+			if (!isObj && !isStr) {
+				throw new Error('Invalid result of component-loader, please check the "componentLoader" is specified or not.')
+			}
 			return Comps({
 				context: path.dirname(request),
 				template: content || '',
@@ -183,6 +184,9 @@ var _tags = {
 		},
 		inner: function () {
 			var resolveInfo = fileLoader.call(this, this.request, this.context)
+			if (!resolveInfo) {
+				throw new Error('Invalid result of file-loader, please check the "fileLoader" is specified or not.')
+			}
 			return Comps({
 				context: path.dirname(resolveInfo.request),
 				template: resolveInfo.content || '',
