@@ -2,8 +2,7 @@
 [![npm version](https://badge.fury.io/js/comps.svg)](https://badge.fury.io/js/comps)
 [![travis-ci](https://travis-ci.org/switer/comps.svg?branch=master)](https://travis-ci.org/switer/comps)
 
-A components template language of node.js.
-
+Components in server side render.
 
 
 ## Install
