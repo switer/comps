@@ -248,7 +248,7 @@ Pagelet result =>
 </ul>
 ```
 
-If you don't like `require('!!comps!./index.tpl?pagelet=list')`, you can create a independ file for list template:
+If you don't like `require('!!comps!./index.tpl?pagelet=list')`, you can create an independ file for list template:
 `./index.tpl`
 ```html
 <div class="index">
