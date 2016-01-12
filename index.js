@@ -1,10 +1,7 @@
 'use strict'
 
-// debug
-// var Tracer = require('debug-trace')
-// Tracer({always: true})
-
 var path = require('path')
+var fs = require('fs')
 var ASTParser = require('block-ast')
 var ATTParser = require('attribute-parser')
 var util = require('./lib/util')
@@ -16,9 +13,6 @@ var config = require('./lib/config')
 var EMPTY_RESULT = ['', '']
 var EMPTY_STRING = ''
 var CHUNK_SPLITER = '<!--{% chunk /%}-->'
-/**
- * Comps's config
- */
 /**
  * Private match regexps or reg-strings
  */
@@ -76,7 +70,16 @@ var Parser = ASTParser(
 	}
 )
 var componentLoader = noop
-var fileLoader = noop
+var fileLoader = function (request, context) {
+    var fpath = path.isAbsolute(request) 
+        ? request
+        : path.join(context, request)
+
+    return {
+        request: fpath,
+        content: fs.readFileSync(fpath, 'utf-8')
+    }
+}
 var transforms = []
 
 /**
