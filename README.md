@@ -2,8 +2,7 @@
 [![npm version](https://badge.fury.io/js/comps.svg)](https://badge.fury.io/js/comps)
 [![travis-ci](https://travis-ci.org/switer/comps.svg?branch=master)](https://travis-ci.org/switer/comps)
 
-Components in server side render.
-
+A Precompile and data-independent template engine for nodejs.
 
 ## Install
 ```bash
@@ -11,28 +10,21 @@ npm install comps --save
 ```
 
 ## Start up
-Using in server-side render before data template engine render.
+Using with ejs, compile and render before **ejs** rendering.
 
 ```js
 var comps = require('comps')
+var ejs = require('ejs')
 /**
- * Custom compoment file loader
+ * custom component template load method
  */
 comps.componentLoader(function (name) {
     return fs.readFileSync(__dirname + '/c/' + name + '/' + name + '.tpl')
 })
-var tpl = '<div>{% component $id="header" /%}</div>'
-comps({
-    template: tpl
+var tpl = comps({
+    template: '<div>{% component $id="header" /%}</div>'
 })
-/** 
- * Optimize
- */
-var render = comps.compile(tpl)
-/**
- * Output render string
- */
-render()
+var html = ejs.render(template, data)
 ```
 
 ## Doc
@@ -72,7 +64,7 @@ Set render config of Comps. Support properties:
     - **scope** `<Boolean>`|`<Function>`  *Optional* 
         Whether create a child-scope for the tag.
         
-    - **block** `<Boolean>`  *Optional*
+    - **paired** `<Boolean>`  *Optional*
       Restrains the type of tag. if true, can't not using tag as self-closing. If false, the tag must self-closing. Otherwise has not constraint.
         
     - **created** `<Function>` 
@@ -83,6 +75,23 @@ Set render config of Comps. Support properties:
 
     - **inner** `<Function>` 
         Call when tag's child template is rendered. Must **return** String.
+
+Context properties for tag's methods: 
+    
+    - **$scope** `<Object>` 
+        Scope of current context, properties will be herited to child-scope.
+    - **$el** `<Object>`
+        AST node of the tag.
+    - **$raw** `<String>`
+        Tag's raw content.
+    - **$name** `<String>`
+        Tag name.
+    - **$attributes** `<Object>`
+        All attributes of the tag.
+    - **$walk** `<Function>`
+        AST traverse method, using to continue traverse childNodes of the tag.
+    - **$render** `<Function>`
+        All attributes of the tag.
 
 #### compile(tpl)
 - **Param**: tpl`<String>`

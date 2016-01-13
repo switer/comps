@@ -19,7 +19,7 @@ var CHUNK_SPLITER = '<!--{% chunk /%}-->'
 var _open_tag_reg_str = _genRegStr(config.openTag)
 var _close_tag_reg_str = _genRegStr(config.closeTag)
 var _wildcard_reg = _genWildcardReg()
-var _block_close_reg = _genBlockCloseReg()
+var _paired_close_reg = _genPairedCloseReg()
 var _self_close_reg = _genSelfCloseReg()
 var _trim_reg = _genTrimReg()
 /**
@@ -28,7 +28,7 @@ var _trim_reg = _genTrimReg()
 function _genRegStr (str) {
 	return '\\' + str.split('').join('\\')
 }
-function _genBlockCloseReg () {
+function _genPairedCloseReg () {
 	return new RegExp(_open_tag_reg_str + '\\s*/[\\s\\S]+?' + _close_tag_reg_str, 'm')
 }
 function _genSelfCloseReg () {
@@ -63,7 +63,7 @@ var Parser = ASTParser(
 		return _self_close_reg.test(tag)
 	},
 	function isOpenTag(tag, ctx) {
-		return !_block_close_reg.test(tag)
+		return !_paired_close_reg.test(tag)
 	},
 	{
 		strict: true // unclosing tag will throw error.
@@ -88,7 +88,7 @@ var transforms = []
 var _tags = {
 	// build in tags
 	pagelet: {
-		block: true,
+		paired: true,
 		scope: function (scope) {
 			scope.$pagelet = scope.$pagelet || ''
 			scope.$patches = scope.$patches 
@@ -198,7 +198,7 @@ var _tags = {
 		}
 	},
 	chunk: {
-		block: false,
+		paired: false,
 		created: function () {
 			var rootScope = this.$scope.$root()
 			var id = this.$attributes.$id
@@ -248,7 +248,7 @@ Comps.config = function (name, value) {
 			// generate regexp object when config changed
 			_open_tag_reg_str = _genRegStr(config.openTag)
 			_close_tag_reg_str = _genRegStr(config.closeTag)
-			_block_close_reg = _genBlockCloseReg()
+			_paired_close_reg = _genPairedCloseReg()
 			_self_close_reg = _genSelfCloseReg()
 			_wildcard_reg = _genWildcardReg()
 			_trim_reg = _genTrimReg()
@@ -332,7 +332,7 @@ Comps.bigpipe = function (options) {
 Comps.Scope = Scope
 function walk(node, scope) {
 	var name
-	var isBlock = false
+	var isPaired = false
 	var output = ''
 	switch(node.nodeType) {
 		// Root
@@ -341,18 +341,18 @@ function walk(node, scope) {
 				return walk(n, scope)
 			}).join('')
 			break
-		// Block Tag
+		// Paired Tag
 		case 2:
-			isBlock = true
+			isPaired = true
 		// Self-Closing Tag
 		case 3:
-			var attStr = _trim(isBlock ? node.openHTML : node.outerHTML)
+			var attStr = _trim(isPaired ? node.openHTML : node.outerHTML)
 			name = _getTagNameWithoutTrim(attStr)
 			attStr = attStr.replace(/^\S+\s*/, '')
 			var def = _tags[name]
 
 			if (def){
-				var tag = new Tag(node, isBlock, name, def, attStr, scope, function (n, s/*node, scope*/) {
+				var tag = new Tag(node, isPaired, name, def, attStr, scope, function (n, s/*node, scope*/) {
 					// render childNodes recursively
 					return walk(n, s)
 				})
