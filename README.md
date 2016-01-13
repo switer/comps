@@ -27,6 +27,8 @@ var tpl = comps({
 var html = ejs.render(template, data)
 ```
 
+See [example](https://github.com/switer/vfe-init-server-side-render).
+
 ## Doc
 
 - **[Class Methods](#class-methods)**
