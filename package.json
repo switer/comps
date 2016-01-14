@@ -23,7 +23,7 @@
   "homepage": "https://github.com/switer/comps",
   "dependencies": {
     "attribute-parser": "^1.0.0",
-    "block-ast": "^1.0.4"
+    "block-ast": "^1.1.0"
   },
   "devDependencies": {
     "console-trace": "^0.2.1",
