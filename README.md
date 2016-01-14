@@ -16,7 +16,7 @@ Using with ejs, compile and render before **ejs** rendering.
 var comps = require('comps')
 var ejs = require('ejs')
 /**
- * custom component template load method
+ * Custom method for loading component's template file by id
  */
 comps.componentLoader(function (name) {
     return fs.readFileSync(__dirname + '/c/' + name + '/' + name + '.tpl')
@@ -24,7 +24,7 @@ comps.componentLoader(function (name) {
 var tpl = comps({
     template: '<div>{% component $id="header" /%}</div>'
 })
-var html = ejs.render(template, data)
+var html = ejs.render(tpl, data)
 ```
 
 See [example](https://github.com/switer/vfe-init-server-side-render).
