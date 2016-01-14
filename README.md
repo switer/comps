@@ -368,23 +368,23 @@ Execute expression and output data that given by component.
 
 Declare data in component tag:
 ```html
-{% component $id="header" $data="title: 'Output tag', " /%}
+{% component $id="main" $data="title: 'Output ag', content: 'Data from components' " /%}
 ```
 
-Render data:
+Templte of `"main"` component:
 ```html
 <div>
     {%> 'Title is: ' + title %}
+    {%> 'Content is: ' + content %}
 </div>
 ```
 Render result:
 ```html
 <div>
     Title is: Output tag
+    Content is: Data from components
 </div>
 ```
-
-
 
 **Example**:
 ```html

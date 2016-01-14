@@ -1,1 +1,4 @@
-<div>{%> 'title:' + title /%}</div>
+<div>
+    {%> 'title:' + title + ' => ' /%}
+    {%> 'content:' + content /%}
+</div>

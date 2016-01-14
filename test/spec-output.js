@@ -24,8 +24,8 @@ describe('Output', function () {
     })
     it('Expression', function () {
         var str = comps({
-            template: '<div>{% component $id="output-case-4" $data="title: \'hello\'" %}{%/component%}</div>',
+            template: '<div>{% component $id="output-case-4" $data="title: \'hello\', content: \'word\'" %}{%/component%}</div>',
         })
-        assert.equal(str, '<div><div r-component="c-output-case-4">title:hello</div></div>')
+        assert.equal(str, '<div><div r-component="c-output-case-4">title:hello => content:word\n</div></div>')
     })
 })
