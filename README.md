@@ -374,8 +374,8 @@ Declare data in component tag:
 Templte of `"main"` component:
 ```html
 <div>
-    {%> 'Title is: ' + title %}
-    {%> 'Content is: ' + content %}
+    {%> 'Title is: ' + title /%}
+    {%> 'Content is: ' + content /%}
 </div>
 ```
 Render result:
