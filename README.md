@@ -363,6 +363,29 @@ Inline another HTML template file into current template.
 ### chunk 
 Bigpipe chunk split tag, and declare data dependences of above chunk.
 
+### output(>)
+Execute expression and output data that given by component.
+
+Declare data in component tag:
+```html
+{% component $id="header" $data="title: 'Output tag', " /%}
+```
+
+Render data:
+```html
+<div>
+    {%> 'Title is: ' + title %}
+</div>
+```
+Render result:
+```html
+<div>
+    Title is: Output tag
+</div>
+```
+
+
+
 **Example**:
 ```html
 ...
