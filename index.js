@@ -10,6 +10,7 @@ var Scope = require('./lib/scope')
 var BigPipe = require('./lib/bigpipe')
 var Tag = require('./lib/tag')
 var config = require('./lib/config')
+var execute = require('./lib/execute')
 var EMPTY_RESULT = ['', '']
 var EMPTY_STRING = ''
 var CHUNK_SPLITER = '<!--{% chunk /%}-->'
@@ -100,7 +101,12 @@ var _tags = {
 			this.nowrap = !this.$scope.$pagelet || !this.$attributes.$wrap || this.$attributes.$wrap == 'false'
 
 			var id = this.$attributes.$id
-			if (!id) throw new Error(tagUtil.wrap(this.$name, this.$raw) + ' missing "$id" attribute.')
+			if (!id) {
+				throw new Error(
+					'Pagelet tag missing "$id" attribute.'
+					+ tagUtil.errorTrace(this)
+				)
+			}
 			// pagelet patches
 			var patches = this.patches = this.$scope.$patches
 			patches.push(id)
@@ -125,20 +131,54 @@ var _tags = {
 		}
 	},
 	component: {
+		scope: function (scope) {
+			var $parent = scope.$data
+			scope.$data = Object.create(null)
+			scope.$data.$parent = $parent
+
+		},
 		created: function () {
 			this.tagname = this.$attributes.$tag || 'div'
 
 			this.replace = !this.$attributes.$replace || (this.$attributes.$replace && this.$attributes.$replace != 'false')
 			this.merge = this.$attributes.$replace === 'nomerge' ? false : true // default merge
-
 			var id = this.id = this.$attributes.$id
-			if (!id) throw new Error(tagUtil.wrap(this.$name, this.$raw) + ' missing "$id" attribute.')
+			if (!id) {
+				throw new Error(
+					'Component tag missing "$id" attribute.'
+					+ tagUtil.errorTrace(this)
+				)
+			}
 
 			if (transforms.length) {
 				var that = this
 				transforms.forEach(function (fn) {
 					fn && fn.call(that, id)
 				})
+			}
+			var resolveInfo = componentLoader.call(this, this.id)
+			var isObj = util.type(resolveInfo) == 'object'
+			var isStr = util.type(resolveInfo) == 'string'
+			this.request = isObj ? resolveInfo.request : ''
+			this.content = isObj ? resolveInfo.content : (resolveInfo || '')
+			if (!isObj && !isStr) {
+				throw new Error(
+					'Invalid result of component-loader, please check "componentLoader".'
+					+ tagUtil.errorTrace(this)
+				)
+			}
+
+			var dataStr = this.$attributes.$data
+			if (dataStr) {
+				try {
+					var data = execute('{' + dataStr + '}', this.$scope.$data.$parent)
+					this.$scope.$data = data
+				} catch(e) {
+					throw new Error(
+						'"' + dataStr + '" => "' + e.message + '"'
+						+ tagUtil.errorTrace(this)
+					)
+				}
 			}
 		},
 		outer: function () {
@@ -153,18 +193,10 @@ var _tags = {
 		inner: function () {
 			var reg = /^\$/
 			var attrs = util.attributesExclude(this.$attributes, reg)
-			var resolveInfo = componentLoader.call(this, this.id)
-			var isObj = util.type(resolveInfo) == 'object'
-			var isStr = util.type(resolveInfo) == 'string'
-			var request = isObj ? resolveInfo.request : ''
-			var content = isObj ? resolveInfo.content : (resolveInfo || '')
 
-			if (!isObj && !isStr) {
-				throw new Error('Invalid result of component-loader, please check the "componentLoader" is specified or not.')
-			}
 			return Comps({
-				context: path.dirname(request),
-				template: content || '',
+				context: path.dirname(this.request),
+				template: this.content || '',
 				children: this.$el.childNodes,
 				scope: this.$scope.$clone(),
 				attributes: this.replace && this.merge && Object.keys(attrs) ? attrs : null
@@ -179,7 +211,10 @@ var _tags = {
 
 			var request = this.request = this.$attributes.$path
 			if (!request) {
-				throw new Error('Can\'t request "' + request + '" under "' + this.$scope.$context + '"')
+				throw new Error(
+					'Invalid "$path" of include tag.'
+					+ tagUtil.errorTrace(this)
+				)
 			}
 		},
 		outer: function () {
@@ -188,7 +223,10 @@ var _tags = {
 		inner: function () {
 			var resolveInfo = fileLoader.call(this, this.request, this.context)
 			if (!resolveInfo) {
-				throw new Error('Invalid result of file-loader, please check the "fileLoader" is specified or not.')
+				throw new Error(
+					'Invalid result of file-loader, please check the "fileLoader" is specified or not.'
+					+ tagUtil.errorTrace(this)
+				)
 			}
 			return Comps({
 				context: path.dirname(resolveInfo.request),
@@ -215,6 +253,48 @@ var _tags = {
 			return this.$scope.$chunk
 				? [CHUNK_SPLITER, '']
 				: EMPTY_RESULT
+		},
+		inner: function () {
+			return EMPTY_STRING
+		}
+	},
+	'>': {
+		paired: false,
+		created: function () {
+			this.output = ''
+			if (this.$raw) {
+				var result
+				try {
+					result = execute(this.$raw, this.$scope.$data)
+				} catch (e) {
+					result = ''
+					console.log(
+						'"' + this.$raw + '" => ' + '"' + e.message + '"'
+						+ tagUtil.errorTrace(this)
+					)
+				}
+				var t = util.type(result)
+				var output = ''
+				switch (t) {
+					case 'function':
+						output = result.toString()
+						break
+					case 'object':
+					case 'array':
+						try {
+							output = JSON.stringify(t)
+							break
+						} catch(e) {
+							
+						}
+					default:
+						output = result
+				}
+				this.output = output
+			}
+		},
+		outer: function () {
+			return [this.output, EMPTY_STRING]
 		},
 		inner: function () {
 			return EMPTY_STRING
@@ -266,7 +346,8 @@ Comps.compile = function (tpl) {
 		var attributes = options.attributes
 		var scope = options.scope || new Scope({
 			'$shouldRender': shouldRender,
-			'$pagelet': pagelet
+			'$pagelet': pagelet,
+			'$data': Object.create(null)
 		})
 		/**
 		 * write "$shouldRender" property to external passing scope
@@ -292,6 +373,7 @@ Comps.compile = function (tpl) {
 		if (options.chunk) {
 			scope.$chunk = !!options.chunk
 		}
+		scope.$data = util.extend(scope.$data || {}, options.data)
 		return tagUtil.merge(walk(ast, scope), attributes)
 	}
 }
