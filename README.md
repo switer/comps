@@ -50,7 +50,7 @@ Render given template to string directly with options.
 - **Param**: name`<String>`
 - **Param**: value 
     
-Set render config of Comps. Support properties:
+Rendering configuration setter. Supporting properties:
 - **openTag** `<String>`
      Template syntax of open delimiter. Default *"{%"*.
 - **closeTag** `<String>` 
@@ -61,13 +61,13 @@ Set render config of Comps. Support properties:
     Tag name, using as `{% xxtag /%}` or `{% xxtag %}{%/ xxtag %}`
 
 - **Param**: def`<Object>`
-    Tag configuration. Support properties:
+    Tag configuration. Supporting properties:
 
     - **scope** `<Boolean>`|`<Function>`  *Optional* 
         Whether create a child-scope for the tag.
         
     - **paired** `<Boolean>`  *Optional*
-      Restrains the type of tag. if true, can't not using tag as self-closing. If false, the tag must self-closing. Otherwise has not constraint.
+      Restrains the type of tag. if true, can't not using tag as self-closing. If false, the tag must be self-closing. Otherwise has not constraint.
         
     - **created** `<Function>` 
         Call when tag is created.
@@ -78,7 +78,7 @@ Set render config of Comps. Support properties:
     - **inner** `<Function>` 
         Call when tag's child template is rendered. Must **return** String.
 
-Context properties for tag's methods: 
+Context of defined method: 
     
     - **$scope** `<Object>` 
         Scope of current context, properties will be herited to child-scope.
@@ -107,6 +107,7 @@ Pre-render template and return render method that receive `options` as params.
 - **Param**: options`<Object>`
     Template render options, see [options](#options)
 - **Return**: `<Function>`
+    Bigpipe factory function that will return bigpipe instance after calling
 
 Pre-render template and return factory function that will be create a `bigpipe` instance after calling.
 
@@ -114,6 +115,7 @@ Pre-render template and return factory function that will be create a `bigpipe` 
 - **Param**: options`<Object>`
     Template render options, see [options](#options)
 - **Return**: `<Object>`
+    Bigpipe instance. See [Using Bigpipe](#using-bigpipe)
 
 Create a `bigpipe` instance directly.
 
@@ -295,6 +297,7 @@ HTML template for rendering.
 - *Optional*
 
 Render those template including in pagelet tag. It compare `pagelet` option with pagelet tag's `$id`.
+See [Using pagelet](#using-pagelet).
 
 #### chunk 
 - Type: `<Boolean>` 
@@ -303,6 +306,7 @@ Render those template including in pagelet tag. It compare `pagelet` option with
 > Note: Chunk is enable default in `bigpipe` rendering.  
 
 If chunk is true, `Comps` will render Chunk tag to `CHUNK_SPLITER`, such as:  `<!--{% chunk /%}-->`.
+See [Using Bigpipe](#using-bigpipe).
 
 #### context
 - Type: `<String>` 
