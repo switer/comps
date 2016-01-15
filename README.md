@@ -80,20 +80,20 @@ Rendering configuration setter. Supporting properties:
 
 Context of defined method: 
     
-    - **$scope** `<Object>` 
-        Scope of current context, properties will be herited to child-scope.
-    - **$el** `<Object>`
-        AST node of the tag.
-    - **$raw** `<String>`
-        Tag's raw content.
-    - **$name** `<String>`
-        Tag name.
-    - **$attributes** `<Object>`
-        All attributes of the tag.
-    - **$walk** `<Function>`
-        AST traverse method, using to continue traverse childNodes of the tag.
-    - **$render** `<Function>`
-        All attributes of the tag.
+- **$scope** `<Object>` 
+    Scope of current context, properties will be herited to child-scope.
+- **$el** `<Object>`
+    AST node of the tag.
+- **$raw** `<String>`
+    Tag's raw content.
+- **$name** `<String>`
+    Tag name.
+- **$attributes** `<Object>`
+    All attributes of the tag.
+- **$walk** `<Function>`
+    AST traverse method, using to continue traverse childNodes of the tag.
+- **$render** `<Function>`
+    All attributes of the tag.
 
 #### compile(tpl)
 - **Param**: tpl`<String>`
