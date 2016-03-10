@@ -90,6 +90,7 @@ var _tags = {
 	// build in tags
 	pagelet: {
 		paired: true,
+		recursive: true,
 		scope: function (scope) {
 			scope.$pagelet = scope.$pagelet || ''
 			scope.$patches = scope.$patches 
@@ -131,6 +132,7 @@ var _tags = {
 		}
 	},
 	component: {
+		recursive: true,
 		scope: function (scope) {
 			var $parent = scope.$data
 			scope.$data = Object.create(null)
@@ -204,6 +206,7 @@ var _tags = {
 		}
 	},
 	include: {
+		recursive: true,
 		created: function () {
 			this.context = this.$scope.$context
 				? this.$scope.$context
@@ -237,6 +240,7 @@ var _tags = {
 	},
 	chunk: {
 		paired: false,
+		recursive: false,
 		created: function () {
 			var rootScope = this.$scope.$root()
 			var id = this.$attributes.$id
@@ -260,6 +264,7 @@ var _tags = {
 	},
 	'>': {
 		paired: false,
+		recursive: false,
 		created: function () {
 			this.output = ''
 			if (this.$raw) {
