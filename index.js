@@ -70,8 +70,14 @@ var Parser = ASTParser(
 		strict: true // unclosing tag will throw error.
 	}
 )
-var componentLoader = noop
-var fileLoader = function (request, context) {
+function defaultComponentLoader (name) {
+	var request = path.join(process.cwd(), 'c', name, name, '.tpl')
+    return {
+        request: request,
+        content: fs.readFileSync(request, 'utf-8')
+    }
+}
+function defaultFileLoader (request, context) {
     var fpath = path.isAbsolute(request) 
         ? request
         : path.join(context, request)
@@ -81,6 +87,8 @@ var fileLoader = function (request, context) {
         content: fs.readFileSync(fpath, 'utf-8')
     }
 }
+var componentLoader = defaultComponentLoader
+var fileLoader = defaultFileLoader
 var transforms = []
 
 /**
@@ -417,6 +425,8 @@ Comps.bigpipe = function (options) {
 	return creator()
 }
 Comps.Scope = Scope
+Comps.defaultComponentLoader = defaultComponentLoader
+Comps.defaultFileLoader = defaultFileLoader
 function walk(node, scope) {
 	var name
 	var isPaired = false
