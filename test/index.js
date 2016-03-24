@@ -26,6 +26,7 @@ comps.componentTransform(function (name) {
     this.$attributes['r-component'] = 'c-' + name
 })
 
+require('./spec-instance.js')
 require('./spec-classmethods.js')
 require('./spec-component.js')
 require('./spec-pagelet.js')
