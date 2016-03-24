@@ -46,6 +46,17 @@ See [example](https://github.com/switer/vfe-init-server-side-render).
 
 Render given template to string directly with options.
 
+#### create()
+
+Create Comps instance with isolated private variables.
+
+```js
+var Comps = require('comps').create()
+Comps({
+    // ...
+})
+```
+
 #### config(name, value)
 - **Param**: name`<String>`
 - **Param**: value 
