@@ -56,3 +56,24 @@ describe('Class-Methods: tag()', function () {
         assert.equal(r, 'pagelet-content')
     })
 })
+describe('Class-Methods: aspect()', function () {
+    it('Inner after aspect hook', function () {
+        var _comps = comps.create()
+        _comps.componentLoader(function (name) {
+            var fpath = __dirname + '/c/' + name + '/' + name + '.tpl'
+            return {
+                request: fpath,
+                content: require('fs').readFileSync(fpath, 'utf-8').replace(/\r?\n\s+/g, '')
+            }
+        })
+        _comps.aspect('component', {
+            render: function (innerHTML) {
+                return '<div class="wrap">' + innerHTML + '</div>'
+            }
+        })
+        var r = _comps({
+            template: '{% component $id="header" /%}'
+        })
+        assert.equal(r, '<div class="wrap"><div class="header"></div></div>')
+    })
+})

@@ -81,6 +81,7 @@ function CompsFactory() {
 	var componentLoader = defaultComponentLoader
 	var fileLoader = defaultFileLoader
 	var transforms = []
+	var _compileAspects = {}
 
 	/**
 	 * Internal variables
@@ -314,15 +315,23 @@ function CompsFactory() {
 	}
 	Comps.tag = function (name, def) {
 		_tags[name] = def
+		return Comps
+	}
+	Comps.aspect = function (name, def) {
+		_compileAspects[name] = def
+		return Comps
 	}
 	Comps.componentLoader = function (loader) {
 		componentLoader = loader
+		return Comps
 	}
 	Comps.fileLoader = function (loader) {
 		fileLoader = loader
+		return Comps
 	}
 	Comps.componentTransform = function (fn) {
 		transforms.push(fn)
+		return Comps
 	}
 	Comps.config = function (name, value) {
 		config[name] = value
@@ -338,6 +347,7 @@ function CompsFactory() {
 				_trim_reg = _genTrimReg()
 				break
 		}
+		return Comps
 	}
 	Comps.compile = function (tpl) {
 		if (!tpl && tpl !== '') throw new Error('Unvalid template.')
@@ -441,7 +451,7 @@ function CompsFactory() {
 				var def = _tags[name]
 
 				if (def){
-					var tag = new Tag(node, isPaired, name, def, attStr, scope, function (n, s/*node, scope*/) {
+					var tag = new Tag(node, isPaired, name, def, attStr, scope, _compileAspects, function (n, s/*node, scope*/) {
 						// render childNodes recursively
 						return walk(n, s)
 					})
