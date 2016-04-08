@@ -207,6 +207,7 @@ function CompsFactory() {
 		},
 		include: {
 			recursive: true,
+			scope: true,
 			created: function () {
 				this.context = this.$scope.$context
 					? this.$scope.$context
