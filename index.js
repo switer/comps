@@ -152,12 +152,6 @@ function CompsFactory() {
 					)
 				}
 
-				if (transforms.length) {
-					var that = this
-					transforms.forEach(function (fn) {
-						fn && fn.call(that, id)
-					})
-				}
 				var resolveInfo = componentLoader.call(this, this.id)
 				var isObj = util.type(resolveInfo) == 'object'
 				var isStr = util.type(resolveInfo) == 'string'
@@ -169,7 +163,17 @@ function CompsFactory() {
 						+ tagUtil.errorTrace(this)
 					)
 				}
-
+				/**
+				 * call transfrom After load component
+				 * @param  {[type]} transforms.length [description]
+				 * @return {[type]}                   [description]
+				 */
+				if (transforms.length) {
+					var that = this
+					transforms.forEach(function (fn) {
+						fn && fn.call(that, id)
+					})
+				}
 				var dataStr = this.$attributes.$data
 				if (dataStr) {
 					try {
