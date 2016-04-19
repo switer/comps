@@ -57,23 +57,61 @@ describe('Class-Methods: tag()', function () {
     })
 })
 describe('Class-Methods: aspect()', function () {
-    it('Inner after aspect hook', function () {
-        var _comps = comps.create()
-        _comps.componentLoader(function (name) {
-            var fpath = __dirname + '/c/' + name + '/' + name + '.tpl'
-            return {
-                request: fpath,
-                content: require('fs').readFileSync(fpath, 'utf-8').replace(/\r?\n\s+/g, '')
-            }
-        })
+    var _comps = comps.create()
+    _comps.componentLoader(function (name) {
+        var fpath = __dirname + '/c/' + name + '/' + name + '.tpl'
+        return {
+            request: fpath,
+            content: require('fs').readFileSync(fpath, 'utf-8').replace(/\r?\n\s+/g, '')
+        }
+    })
+
+    it('render aspect', function () {
         _comps.aspect('component', {
             render: function (innerHTML) {
                 return '<div class="wrap">' + innerHTML + '</div>'
             }
         })
         var r = _comps({
-            template: '{% component $id="header" /%}'
+            template: '{% component $id="header"/%}'
         })
         assert.equal(r, '<div class="wrap"><div class="header"></div></div>')
+    })
+    it('beforeCreated aspect', function () {
+        _comps.aspect('component', {
+            beforeCreated: function () {
+                this._with = this.$attributes.with
+                delete this.$attributes.with
+            },
+            render: function (innerHTML) {
+                return '<div class="wrap" data-with="' + this._with + '">' + innerHTML + '</div>'
+            }
+        })
+        var r = _comps({
+            template: '{% component $id="header" with="data"/%}'
+        })
+        assert.equal(r, '<div class="wrap" data-with="data"><div class="header"></div></div>')
+    })
+    it('beforeInner aspect', function () {
+        _comps.aspect('component', {
+            beforeInner: function () {
+                this.content = 'apsect content'
+            }
+        })
+        var r = _comps({
+            template: '{% component $id="header"/%}'
+        })
+        assert.equal(r, 'apsect content')
+    })
+    it('beforeOuter aspect', function () {
+        _comps.aspect('component', {
+            beforeOuter: function () {
+                this.$attributes.with = 'data'
+            }
+        })
+        var r = _comps({
+            template: '{% component $id="header"/%}'
+        })
+        assert.equal(r, '<div class="header" with="data"></div>')
     })
 })
