@@ -344,6 +344,15 @@ It will call `componentLoader` to loader component file by id "header".
 - **$tag**          Specify tag name of component wrapper tag. *Optional*
 - **$replace**   Using component wrapper tag of not, default `false`. Set to "`nomerge`" will not copy attributes to template container element, otherwise all attribute from the component tag will copy to template container element and overwrite exist attribute.*Optional* 
 
+**Events***
+
+- **componentcreated(tagInstance)**
+- **beforecomponentload(id, tagInstance)**
+- **componentloaded(id, tagInstance, result)**
+        
+        After load, will get request/context of the component in "tagInstance", changing will change render result.
+
+
 ### pagelet
 Pagelet tag is using to render template only that  included in pagelet if `pagelet` option is given. 
 
@@ -370,6 +379,12 @@ Inline another HTML template file into current template.
 
 **Attributes**:
 - **$path** File path, can be relative or absolute.
+
+**Events**
+- **beforefileload(request, context, tagInstance)**
+- **fileloaded(result, tagInstance)**
+        
+        After load, will get request/context of the file in "tagInstance", changing will change render result.
 
 ### chunk 
 Bigpipe chunk split tag, and declare data dependences of above chunk.
