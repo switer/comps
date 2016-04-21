@@ -4,6 +4,7 @@ var path = require('path')
 var fs = require('fs')
 var ASTParser = require('block-ast')
 var ATTParser = require('attribute-parser')
+var EventEmitter = require('events')
 var util = require('./lib/util')
 var tagUtil = require('./lib/tag-util')
 var Scope = require('./lib/scope')
@@ -14,7 +15,6 @@ var execute = require('./lib/execute')
 var EMPTY_RESULT = ['', '']
 var EMPTY_STRING = ''
 var CHUNK_SPLITER = '<!--{% chunk /%}-->'
-
 /**
  * Create Comps constructor with isolated private variables
  */
@@ -82,6 +82,8 @@ function CompsFactory() {
 	var fileLoader = defaultFileLoader
 	var transforms = []
 	var _compileAspects = {}
+	var emitter = new EventEmitter()
+
 
 	/**
 	 * Internal variables
@@ -140,6 +142,7 @@ function CompsFactory() {
 
 			},
 			created: function () {
+				emitter.emit('componentcreated', this)
 				this.tagname = this.$attributes.$tag || 'div'
 
 				this.replace = !this.$attributes.$replace || (this.$attributes.$replace && this.$attributes.$replace != 'false')
@@ -152,17 +155,20 @@ function CompsFactory() {
 					)
 				}
 
+				emitter.emit('beforecomponentload', this.id, this)
 				var resolveInfo = componentLoader.call(this, this.id)
 				var isObj = util.type(resolveInfo) == 'object'
 				var isStr = util.type(resolveInfo) == 'string'
 				this.request = isObj ? resolveInfo.request : ''
 				this.content = isObj ? resolveInfo.content : (resolveInfo || '')
+
 				if (!isObj && !isStr) {
 					throw new Error(
 						'Invalid result of component-loader, please check "componentLoader".'
 						+ tagUtil.errorTrace(this)
 					)
 				}
+				emitter.emit('componentloaded', this.id, this, resolveInfo)
 				/**
 				 * call transfrom After load component
 				 * @param  {[type]} transforms.length [description]
@@ -229,6 +235,7 @@ function CompsFactory() {
 				return EMPTY_RESULT
 			},
 			inner: function () {
+				emitter.emit('beforefileload', this.request, this.context, this)
 				var resolveInfo = fileLoader.call(this, this.request, this.context)
 				if (!resolveInfo) {
 					throw new Error(
@@ -236,6 +243,7 @@ function CompsFactory() {
 						+ tagUtil.errorTrace(this)
 					)
 				}
+				emitter.emit('fileloaded', resolveInfo, this)
 				return Comps({
 					context: path.dirname(resolveInfo.request),
 					template: resolveInfo.content || '',
@@ -317,6 +325,12 @@ function CompsFactory() {
 	 */
 	function Comps (options) {
 		return Comps.compile(options.template)(options)
+	}
+	Comps.on = function (evt, listener) {
+		emitter.on(evt, listener)
+		return function () {
+			emitter.removeListener(evt, listener)
+		}
 	}
 	Comps.tag = function (name, def) {
 		_tags[name] = def

@@ -40,4 +40,34 @@ describe('Include', function () {
         })
         assert.equal(r.trim(), '<div class="case 5"><div class="main" r-component="c-main"><div class="header" r-component="c-header"></div><section class="part"></section>\n</div></div>')
     })
+    it('Events: emit beforeload event', function (done) {
+        var unwatch = comps.on('beforefileload', function (request, context, file) {
+            assert.equal(file.$attributes.$path, 'tpls/include-case-5.tpl')
+            assert.equal(request, 'tpls/include-case-5.tpl')
+            assert.equal(file.request, 'tpls/include-case-5.tpl')
+            assert(/\/test$/.test(context))
+            assert(/\/test$/.test(file.context))
+            unwatch()
+            done()
+        })
+        var r = comps({
+            context: __dirname,
+            template: '{% include $path="tpls/include-case-5.tpl" /%}'
+        })
+        assert.equal(r.trim(), '<div class="case 5"><div class="main" r-component="c-main"><div class="header" r-component="c-header"></div><section class="part"></section>\n</div></div>')
+    })
+    it('Events: emit beforeloaded event', function (done) {
+        var unwatch = comps.on('fileloaded', function (path, file) {
+            assert.equal(file.$attributes.$path, 'tpls/include-case-5.tpl')
+            assert(/test\/tpls\/include-case-5\.tpl/.test(path.request))
+            assert.equal(path.content, '<div class="case 5">{% component $id="main" $replace=true /%}</div>')
+            unwatch()
+            done()
+        })
+        var r = comps({
+            context: __dirname,
+            template: '{% include $path="tpls/include-case-5.tpl" /%}'
+        })
+        assert.equal(r.trim(), '<div class="case 5"><div class="main" r-component="c-main"><div class="header" r-component="c-header"></div><section class="part"></section>\n</div></div>')
+    })
 })
