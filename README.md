@@ -347,10 +347,12 @@ It will call `componentLoader` to loader component file by id "header".
 **Events***
 
 - **componentcreated(tagInstance)**
+
 - **beforecomponentload(id, tagInstance)**
+
 - **componentloaded(id, tagInstance, result)**
         
-        After load, will get request/context of the component in "tagInstance", changing will change render result.
+    After load, will get request/context of the component in "tagInstance", changing will change render result.
 
 
 ### pagelet
@@ -382,9 +384,10 @@ Inline another HTML template file into current template.
 
 **Events**
 - **beforefileload(request, context, tagInstance)**
+
 - **fileloaded(result, tagInstance)**
         
-        After load, will get request/context of the file in "tagInstance", changing will change render result.
+    After load, will get request/context of the file in "tagInstance", changing will change render result.
 
 ### chunk 
 Bigpipe chunk split tag, and declare data dependences of above chunk.
