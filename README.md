@@ -333,7 +333,8 @@ All build-in available tag of comps.
 ### component
 Component tag is using to load and handle component template file
 
-**Example**:
+**Example**
+
 ```html
 {% component $id="header" /%}
 ```
@@ -344,15 +345,39 @@ It will call `componentLoader` to loader component file by id "header".
 - **$tag**          Specify tag name of component wrapper tag. *Optional*
 - **$replace**   Using component wrapper tag of not, default `false`. Set to "`nomerge`" will not copy attributes to template container element, otherwise all attribute from the component tag will copy to template container element and overwrite exist attribute.*Optional* 
 
-**Events***
+**Events**
 
-- **componentcreated(tagInstance)**
+- **componentcreated**(tagInstance)
 
-- **beforecomponentload(id, tagInstance)**
+- **beforecomponentload**(id, tagInstance)
 
-- **componentloaded(id, tagInstance, result)**
+- **componentloaded**(id, tagInstance, result)
         
     After load, will get request/context of the component in "tagInstance", changing will change render result.
+
+**Insertion point**
+
+```html
+{% component $id="header" /%}Inner Content{% /component %}
+```
+
+Using `$content`:
+
+```html
+<div class="header">
+    {%> $content /%}
+</div>
+```
+
+Will render to:
+
+```html
+<div class="header">
+    Inner Content
+</div>
+```
+
+> noti: Comps's tags of `Inner Content` will be rendered by outer component scope
 
 
 ### pagelet

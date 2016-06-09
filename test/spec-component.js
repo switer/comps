@@ -60,4 +60,16 @@ describe('Component', function () {
         })
         unwatch()
     })
+    it('$insertion point: $content', function () {
+        var r = comps({
+            template: '{% component $id="insertion-point"%}Inert to component{%/component%}'
+        })
+        assert.equal(r, '<div r-component="c-insertion-point">Inert to component</div>')
+    })
+    it('$insertion point in outer rendering', function () {
+        var r = comps({
+            template: '{% component $id="insertion-point"%}{%component $id="header"/%}{%/component%}'
+        })
+        assert.equal(r, '<div r-component="c-insertion-point"><div class="header" r-component="c-header"></div></div>')
+    })
 })

@@ -139,7 +139,6 @@ function CompsFactory() {
 				var $parent = scope.$data
 				scope.$data = Object.create(null)
 				scope.$data.$parent = $parent
-
 			},
 			created: function () {
 				emitter.emit('componentcreated', this)
@@ -184,7 +183,7 @@ function CompsFactory() {
 				if (dataStr) {
 					try {
 						var data = execute('{' + dataStr + '}', this.$scope.$data.$parent)
-						this.$scope.$data = data
+						this.$scope.$data = data || Object.create(null)
 					} catch(e) {
 						throw new Error(
 							'"' + dataStr + '" => "' + e.message + '"'
@@ -192,6 +191,13 @@ function CompsFactory() {
 						)
 					}
 				}
+				/**
+				 * Assign childNodes for output
+				 */
+				var ctx = this
+				this.$scope.$data.$content = this.$el.childNodes.map(function (n) {
+					return ctx.$walk(n, ctx.$scope)
+				}).join('')
 			},
 			outer: function () {
 				if (this.replace) return EMPTY_RESULT
