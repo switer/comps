@@ -28,4 +28,22 @@ describe('Output', function () {
         })
         assert.equal(str, '<div><div r-component="c-output-case-4">title:hello => content:word\n</div></div>')
     })
+    it('$exist', function () {
+        var str = comps({
+            template: '{% component $id="output-case-5" /%}',
+        })
+        assert.equal(str, '<div r-component="c-output-case-5">option not exist</div>')
+    })
+    it('$get', function () {
+        var str = comps({
+            template: '{% component $id="output-case-6" $data="key2: 123"/%}',
+        })
+        assert.equal(str, '<div r-component="c-output-case-6">key1 not exist/123</div>')
+    })
+    it('$get', function () {
+        var str = comps({
+            template: '{% component $id="output-case-7" $data="key2: 123"/%}',
+        })
+        assert.equal(str, '<div r-component="c-output-case-7">:123</div>')
+    })
 })

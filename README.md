@@ -417,6 +417,17 @@ Inline another HTML template file into current template.
 ### chunk 
 Bigpipe chunk split tag, and declare data dependences of above chunk.
 
+**Example**:
+```html
+...
+<div class="header">...</div>
+{% chunk $require="title,name" /%}
+<div class="footer">...</div>
+...
+```
+`chunk` event will be emitted if require dependences are done.
+
+
 ### output(>)
 Execute expression and output data that given by component.
 
@@ -440,15 +451,12 @@ Render result:
 </div>
 ```
 
-**Example**:
-```html
-...
-<div class="header">...</div>
-{% chunk $require="title,name" /%}
-<div class="footer">...</div>
-...
-```
-`chunk` event will be emitted if require dependences are done.
+Build in properties and methods:
+
+* $exist <`Function`> checkout the property in current scope exist or not
+* $get <`Function`> get property value from current scope
+* $data <`Object`>  expose scope's data object
+
 
 **Attributes**:
 - **$require** Require dependences, multiple keys splited by  "`,`" .

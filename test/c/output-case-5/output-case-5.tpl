@@ -1,0 +1,1 @@
+<div>{%> $exist('option') ? 'has option' : 'option not exist' /%}</div>

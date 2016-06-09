@@ -1,0 +1,1 @@
+<div>{%> $get('key1') || 'key1 not exist'/%}/{%> $get('key2')/%}</div>

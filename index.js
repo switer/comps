@@ -137,7 +137,7 @@ function CompsFactory() {
 			recursive: true,
 			scope: function (scope) {
 				var $parent = scope.$data
-				scope.$data = Object.create(null)
+				scope.$data = {}
 				scope.$data.$parent = $parent
 			},
 			created: function () {
@@ -183,7 +183,7 @@ function CompsFactory() {
 				if (dataStr) {
 					try {
 						var data = execute('{' + dataStr + '}', this.$scope.$data.$parent)
-						this.$scope.$data = data || Object.create(null)
+						this.$scope.$data = data || {}
 					} catch(e) {
 						throw new Error(
 							'"' + dataStr + '" => "' + e.message + '"'
@@ -289,7 +289,17 @@ function CompsFactory() {
 				if (this.$raw) {
 					var result
 					try {
-						result = execute(this.$raw, this.$scope.$data)
+						var $data = this.$scope.$data
+						result = execute(this.$raw, util.extend({}, $data, {
+							'$data': $data || {},
+							'$exist': function (prop) {
+								return $data && util.hasProp($data, prop)
+							},
+							'$get': function (prop) {
+								if (!$data) return
+								return $data[prop]
+							}
+						}))
 					} catch (e) {
 						result = ''
 						console.log(
@@ -386,7 +396,7 @@ function CompsFactory() {
 			var scope = options.scope || new Scope({
 				'$shouldRender': shouldRender,
 				'$pagelet': pagelet,
-				'$data': Object.create(null)
+				'$data': {}
 			})
 			/**
 			 * write "$shouldRender" property to external passing scope
