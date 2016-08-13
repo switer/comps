@@ -46,4 +46,14 @@ describe('Output', function () {
         })
         assert.equal(str, '<div r-component="c-output-case-7">:123</div>')
     })
+    it('?', function () {
+        var str = comps({
+            template: '{% component $id="output-case-8" $data="isShowHeader: true"/%}',
+        })
+        var st2 = comps({
+            template: '{% component $id="output-case-8" $data="isShowHeader: false"/%}',
+        })
+        assert.equal(str, '<div r-component="c-output-case-8"><div class="header" r-component="c-header"></div></div>')
+        assert.equal(st2, '<div r-component="c-output-case-8"></div>')
+    })
 })

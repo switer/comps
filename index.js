@@ -337,10 +337,10 @@ function CompsFactory() {
 				}
 			},
 			outer: function() {
-
+				return ['', '']
 			},
 			inner: function() {
-
+				return this.cnd && !this.hasError ? this.$inner() : ''
 			}
 		}
 	}

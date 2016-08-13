@@ -1,0 +1,1 @@
+<div>{%? isShowHeader %}{%component $id="header" /%}{%/?%}</div>
