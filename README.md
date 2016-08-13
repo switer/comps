@@ -427,6 +427,8 @@ Bigpipe chunk split tag, and declare data dependences of above chunk.
 ```
 `chunk` event will be emitted if require dependences are done.
 
+**Attributes**:
+- **$require** Require dependences, multiple keys splited by  "`,`" .
 
 ### output(>)
 Execute expression and output data that given by component.
@@ -457,6 +459,29 @@ Build in properties and methods:
 * $get <`Function`> get property value from current scope
 * $data <`Object`>  expose scope's data object
 
+### if(?)
+Branch logic, it will render contents if condition's value is truly.
 
-**Attributes**:
-- **$require** Require dependences, multiple keys splited by  "`,`" .
+```html
+{% component $id="main" 
+    $data="isShowText: true" 
+/%}
+```
+
+Templte of `"main"` component:
+```html
+<div>
+    {%? isShowText%}
+    Hello world
+    {%/?%}
+</div>
+```
+
+Render result:
+```html
+<div>
+    Hello world
+</div>
+```
+
+Hash same build in properties and methods of [output(>)](#output)
