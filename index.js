@@ -11,7 +11,6 @@ var Scope = require('./lib/scope')
 var BigPipe = require('./lib/bigpipe')
 var Tag = require('./lib/tag')
 var config = require('./lib/config')
-var execute = require('./lib/execute')
 var EMPTY_RESULT = ['', '']
 var EMPTY_STRING = ''
 var CHUNK_SPLITER = '<!--{% chunk /%}-->'
@@ -50,14 +49,8 @@ function CompsFactory() {
 	function _trim(c) {
 		return c.replace(_trim_reg, '')
 	}
-	function _getTagName(c) {
-		return _getTagNameWithoutTrim(_trim(c))
-	}
 	function _getTagNameWithoutTrim(c) {
 		return c.match(/\S+/)[0]
-	}
-	function _getAttributes(c) {
-		return ATTParser(_trim(c))
 	}
 
 	/**
@@ -182,7 +175,7 @@ function CompsFactory() {
 				var dataStr = this.$attributes.$data
 				if (dataStr) {
 					try {
-						var data = execute('{' + dataStr + '}', this.$scope.$data.$parent)
+						var data = this.$scope.$execute('{' + dataStr + '}', this.$scope.$data.$parent)
 						this.$scope.$data = data || {}
 					} catch(e) {
 						throw new Error(
@@ -289,17 +282,7 @@ function CompsFactory() {
 				if (this.$raw) {
 					var result
 					try {
-						var $data = this.$scope.$data
-						result = execute(this.$raw, util.extend({}, $data, {
-							'$data': $data || {},
-							'$exist': function (prop) {
-								return $data && util.hasProp($data, prop)
-							},
-							'$get': function (prop) {
-								if (!$data) return
-								return $data[prop]
-							}
-						}))
+						result = this.$scope.$execute(this.$raw)
 					} catch (e) {
 						result = ''
 						console.log(
@@ -343,17 +326,7 @@ function CompsFactory() {
 				if (this.$raw) {
 					var result
 					try {
-						var $data = this.$scope.$data
-						this.cnd = result = execute(this.$raw, util.extend({}, $data, {
-							'$data': $data || {},
-							'$exist': function (prop) {
-								return $data && util.hasProp($data, prop)
-							},
-							'$get': function (prop) {
-								if (!$data) return
-								return $data[prop]
-							}
-						}))
+						this.cnd = result = this.$scope.$execute(this.$raw)
 					} catch (e) {
 						this.hasError = true
 						console.log(
@@ -540,7 +513,6 @@ function CompsFactory() {
 	}
 	return Comps
 }
-function noop(){}
 
 function defaultComponentLoader (name) {
 	var request = path.join(process.cwd(), 'c', name, name, '.tpl')
