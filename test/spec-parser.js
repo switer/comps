@@ -8,6 +8,6 @@ describe('Bigpipe', function () {
     	var r = comps({
     		template: '<div class="_clazz ' + expr + '"></div>'
     	})
-    	console.log(r)
+    	assert.equal(r, '<div class="_clazz result_item_v"></div>')
     })
 })

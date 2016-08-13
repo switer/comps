@@ -333,6 +333,42 @@ function CompsFactory() {
 			inner: function () {
 				return EMPTY_STRING
 			}
+		},
+		'?': {
+			paired: true,
+			recursive: true,
+			created: function () {
+				this.cnd = ''
+				this.hasError = false
+				if (this.$raw) {
+					var result
+					try {
+						var $data = this.$scope.$data
+						this.cnd = result = execute(this.$raw, util.extend({}, $data, {
+							'$data': $data || {},
+							'$exist': function (prop) {
+								return $data && util.hasProp($data, prop)
+							},
+							'$get': function (prop) {
+								if (!$data) return
+								return $data[prop]
+							}
+						}))
+					} catch (e) {
+						this.hasError = true
+						console.log(
+							'"' + this.$raw + '" => ' + '"' + e.message + '"'
+							+ tagUtil.errorTrace(this)
+						)
+					}
+				}
+			},
+			outer: function() {
+
+			},
+			inner: function() {
+
+			}
 		}
 	}
 

@@ -55,6 +55,21 @@ describe('Class-Methods: tag()', function () {
         })
         assert.equal(r, 'pagelet-content')
     })
+    it('$inner method of tag', function () {
+        comps.tag('#', {
+            paired: true,
+            outer: function () {
+                return ['#', '#']
+            },
+            inner: function () {
+                return this.$inner()
+            }
+        })
+        var r = comps({
+            template: '{%#%}{% component $id="header"/%}{%/#%}'
+        })
+        assert.equal(r, '#<div class="header" r-component="c-header"></div>#')
+    })
 })
 describe('Class-Methods: aspect()', function () {
     var _comps = comps.create()
