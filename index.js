@@ -175,7 +175,13 @@ function CompsFactory() {
 				var dataStr = this.$attributes.$data
 				if (dataStr) {
 					try {
-						var data = this.$scope.$execute('{' + dataStr + '}', this.$scope.$data.$parent)
+						var isObjectFormat = /^\s*\{/.test(dataStr)
+						var data = this.$scope.$execute(
+							isObjectFormat 
+								? dataStr
+								: '{' + dataStr + '}',
+								this.$scope.$data.$parent
+							)
 						this.$scope.$data = data || {}
 					} catch(e) {
 						throw new Error(
@@ -236,7 +242,13 @@ function CompsFactory() {
 				var dataStr = this.$attributes.$data
 				if (dataStr) {
 					try {
-						var data = this.$scope.$execute('{' + dataStr + '}', this.$scope.$data.$parent)
+						var isObjectFormat = /^\s*\{/.test(dataStr)
+						var data = this.$scope.$execute(
+							isObjectFormat 
+								? dataStr
+								: '{' + dataStr + '}',
+								this.$scope.$data.$parent
+							)
 						this.$scope.$data = data || {}
 					} catch(e) {
 						throw new Error(

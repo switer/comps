@@ -414,6 +414,23 @@ Inline another HTML template file into current template.
         
     After load, will get request/context of the file in "tagInstance", changing will change render result.
 
+**Passing data**
+
+```html
+{% include $path="./header.tpl" $data="title: 'Comps passing data from include'"/%}
+```
+
+Using in `header.tpl`
+```html
+<div class="header">{%> title /%}</div>
+```
+
+Will render to:
+
+```html
+<div class="header">Comps passing data from include</div>
+```
+
 ### chunk 
 Bigpipe chunk split tag, and declare data dependences of above chunk.
 

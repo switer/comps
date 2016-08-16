@@ -28,6 +28,12 @@ describe('Output', function () {
         })
         assert.equal(str, '<div><div r-component="c-output-case-4">title:hello => content:word\n</div></div>')
     })
+    it('data passing as object', function () {
+        var str = comps({
+            template: '<div>{% component $id="output-case-4" $data="{title: \'hello\', content: \'word\'}" %}{%/component%}</div>',
+        })
+        assert.equal(str, '<div><div r-component="c-output-case-4">title:hello => content:word\n</div></div>')
+    })
     it('$exist', function () {
         var str = comps({
             template: '{% component $id="output-case-5" /%}',
