@@ -1,6 +1,6 @@
 {
   "name": "comps",
-  "version": "2.2.8",
+  "version": "2.3.0",
   "description": "Components in server side render.",
   "main": "index.js",
   "scripts": {

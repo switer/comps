@@ -216,7 +216,11 @@ function CompsFactory() {
 		},
 		include: {
 			recursive: true,
-			scope: true,
+			scope: function (scope) {
+				var $parent = scope.$data
+				scope.$data = {}
+				scope.$data.$parent = $parent
+			},
 			created: function () {
 				this.context = this.$scope.$context
 					? this.$scope.$context
@@ -228,6 +232,18 @@ function CompsFactory() {
 						'Invalid "$path" of include tag.'
 						+ tagUtil.errorTrace(this)
 					)
+				}
+				var dataStr = this.$attributes.$data
+				if (dataStr) {
+					try {
+						var data = this.$scope.$execute('{' + dataStr + '}', this.$scope.$data.$parent)
+						this.$scope.$data = data || {}
+					} catch(e) {
+						throw new Error(
+							'"' + dataStr + '" => "' + e.message + '"'
+							+ tagUtil.errorTrace(this)
+						)
+					}
 				}
 			},
 			outer: function () {
@@ -286,7 +302,7 @@ function CompsFactory() {
 					} catch (e) {
 						result = ''
 						console.log(
-							'"' + this.$raw + '" => ' + '"' + e.message + '"'
+							'"' + this.$raw + '" => ' + '"' + e.message + '" @tag: >'
 							+ tagUtil.errorTrace(this)
 						)
 					}
@@ -330,17 +346,43 @@ function CompsFactory() {
 					} catch (e) {
 						this.hasError = true
 						console.log(
-							'"' + this.$raw + '" => ' + '"' + e.message + '"'
+							'"' + this.$raw + '" => ' + '"' + e.message + '" @tag: ?'
 							+ tagUtil.errorTrace(this)
 						)
 					}
 				}
 			},
 			outer: function() {
-				return ['', '']
+				return EMPTY_RESULT
 			},
 			inner: function() {
 				return this.cnd && !this.hasError ? this.$inner() : ''
+			}
+		},
+		'data': {
+			paired: true,
+			recursive: true,
+			created: function() {
+				var attrs = this.$attributes
+				var attKeys = Object.keys(attrs)
+				this.$scope.$data = this.$scope.$data || {}
+				try {
+					attKeys.forEach(function(k) {
+						var expr = attrs[k]
+						this.$scope.$data[k] = this.$scope.$execute(expr)
+					}.bind(this))
+				} catch(e) {
+					console.log(
+						'"' + this.$raw + '" => ' + '"' + e.message + '" @tag: data'
+						+ tagUtil.errorTrace(this)
+					)
+				}
+			},
+			outer: function() {
+				return EMPTY_RESULT
+			},
+			inner: function() {
+				return this.$inner()
 			}
 		}
 	}

@@ -70,4 +70,11 @@ describe('Include', function () {
         })
         assert.equal(r.trim(), '<div class="case 5"><div class="main" r-component="c-main"><div class="header" r-component="c-header"></div><section class="part"></section>\n</div></div>')
     })
+    it('Passing data', function () {
+        var r = comps({
+            context: __dirname,
+            template: '{% include $path="tpls/include-case-6.tpl" $data="outerContent: \'hello\'"/%}'
+        })
+        assert.equal(r.trim(), '<div>hello</div>')
+    })
 })

@@ -56,4 +56,16 @@ describe('Output', function () {
         assert.equal(str, '<div r-component="c-output-case-8"><div class="header" r-component="c-header"></div></div>')
         assert.equal(st2, '<div r-component="c-output-case-8"></div>')
     })
+    it('data tag', function () {
+        var r = comps({
+            template: '{%data link="\'<a>hello</a>\'"%}{%> link /%}{%/data%}'
+        })
+        assert.equal(r, '<a>hello</a>')
+    })
+    it('data tag before component', function () {
+        var r = comps({
+            template: '{%data isShowHeader="true"%}{% component $id="output-case-8" $data="isShowHeader: isShowHeader"/%}{%/data%}'
+        })
+        assert.equal(r, '<div r-component="c-output-case-8"><div class="header" r-component="c-header"></div></div>')
+    })
 })

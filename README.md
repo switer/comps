@@ -484,4 +484,19 @@ Render result:
 </div>
 ```
 
-Hash same build in properties and methods of [output(>)](#output)
+Has same build in properties and methods of [output(>)](#output)
+
+
+### data
+Create data scope and declare variables.
+
+```html
+{% data name="send" %}
+    My name: {%> name /%} 
+{% /data %}
+```
+
+Render result:
+```html
+My name: send
+```
