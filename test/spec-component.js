@@ -72,4 +72,10 @@ describe('Component', function () {
         })
         assert.equal(r, '<div r-component="c-insertion-point"><div class="header" r-component="c-header"></div></div>')
     })
+    it('Default Loader: component', function () {
+        var r = comps({
+            template: '{% component $id="comps/list" /%}{% component $id="comps/item" /%}'
+        })
+        assert.equal(r, '<ul class="list" r-component="c-list"></ul><div class="item" r-component="c-item"></div>')
+    })
 })

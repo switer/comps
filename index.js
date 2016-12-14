@@ -3,7 +3,6 @@
 var path = require('path')
 var fs = require('fs')
 var ASTParser = require('block-ast')
-var ATTParser = require('attribute-parser')
 var EventEmitter = require('events')
 var util = require('./lib/util')
 var tagUtil = require('./lib/tag-util')
@@ -60,10 +59,10 @@ function CompsFactory() {
 		function operator() {
 			return _wildcard_reg
 		},
-		function isSelfCloseTag(tag, ctx) {
+		function isSelfCloseTag(tag) {
 			return _self_close_reg.test(tag)
 		},
-		function isOpenTag(tag, ctx) {
+		function isOpenTag(tag) {
 			return !_paired_close_reg.test(tag)
 		},
 		{
@@ -76,7 +75,7 @@ function CompsFactory() {
 	var transforms = []
 	var _compileAspects = {}
 	var emitter = new EventEmitter()
-
+	var _conf = {}
 
 	/**
 	 * Internal variables
@@ -148,7 +147,7 @@ function CompsFactory() {
 				}
 
 				emitter.emit('beforecomponentload', this.id, this)
-				var resolveInfo = componentLoader.call(this, this.id)
+				var resolveInfo = componentLoader.call(this, this.id, _conf)
 				var isObj = util.type(resolveInfo) == 'object'
 				var isStr = util.type(resolveInfo) == 'string'
 				this.request = isObj ? resolveInfo.request : ''
@@ -263,7 +262,7 @@ function CompsFactory() {
 			},
 			inner: function () {
 				emitter.emit('beforefileload', this.request, this.context, this)
-				var resolveInfo = fileLoader.call(this, this.request, this.context)
+				var resolveInfo = fileLoader.call(this, this.request, this.context, _conf)
 				if (!resolveInfo) {
 					throw new Error(
 						'Invalid result of file-loader, please check the "fileLoader" is specified or not.'
@@ -404,6 +403,14 @@ function CompsFactory() {
 	 */
 	function Comps (options) {
 		return Comps.compile(options.template)(options)
+	}
+	Comps.set = function (k, v/*conf*/) {
+		if(util.type(k) == 'object') {
+			util.extend(_conf, k)
+		} else {
+			_conf[k] = v
+		}
+		return Comps
 	}
 	Comps.on = function (evt, listener) {
 		emitter.on(evt, listener)
@@ -568,17 +575,36 @@ function CompsFactory() {
 	return Comps
 }
 
-function defaultComponentLoader (name) {
-	var request = path.join(process.cwd(), 'c', name, name, '.tpl')
+function defaultComponentLoader (name, conf) {
+	var part = name
+	var cdir = conf.componentDir || 'c'
+	var prefix
+	if (path.isAbsolute(cdir)) {
+		prefix = cdir
+	} else {
+		prefix = path.join(conf.root || process.cwd(), cdir)
+	}
+
+	if (/^[^\s\/\\\.]+$/.test(name)) {
+		part = path.join(name, name)
+	} else if(/^[^\s\/\\\.]+\/[^\s\/\\\.]+$/.test(name)) {
+		var dir = path.join(prefix, name)
+		var names = name.split('/')
+		// c/dir/name/name.tpl
+		if (fs.existsSync(dir) && fs.statSync(dir).isDirectory()) {
+			part = path.join(name, names[1])
+		}
+	}
+	var request = path.join(prefix, part + '.tpl')
     return {
         request: request,
         content: fs.readFileSync(request, 'utf-8')
     }
 }
-function defaultFileLoader (request, context) {
+function defaultFileLoader (request, context, conf) {
     var fpath = path.isAbsolute(request) 
         ? request
-        : path.join(context, request)
+        : path.join(context || conf.root || process.cwd(), request)
 
     return {
         request: fpath,

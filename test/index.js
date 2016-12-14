@@ -5,25 +5,22 @@ var path = require('path')
 var assert = require('assert')
 var comps = require('../index')
 
-comps.componentLoader(function (name) {
-    var fpath = __dirname + '/c/' + name + '/' + name + '.tpl'
-    return {
-        request: fpath,
-        content: fs.readFileSync(fpath, 'utf-8').replace(/\r?\n\s+/g, '')
-    }
+comps.set({
+    root: __dirname,
+    componentDir: 'c'
 })
-comps.fileLoader(function (request, context) {
-    var fpath = path.isAbsolute(request) 
-        ? request
-        : path.join(context, request)
-
-    return {
-        request: fpath,
-        content: fs.readFileSync(fpath, 'utf-8').replace(/\r?\n\s+/g, '')
-    }
+comps.componentLoader(function () {
+    var obj = comps.defaultComponentLoader.apply(this, arguments)
+    obj.content = obj.content.replace(/\r?\n\s+/g, '')
+    return obj
+})
+comps.fileLoader(function () {
+    var obj = comps.defaultFileLoader.apply(this, arguments)
+    obj.content = obj.content.replace(/\r?\n\s+/g, '')
+    return obj
 })
 comps.componentTransform(function (name) {
-    this.$attributes['r-component'] = 'c-' + name
+    this.$attributes['r-component'] = 'c-' + path.basename(name)
 })
 
 require('./spec-instance.js')
