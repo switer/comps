@@ -516,7 +516,7 @@ Create data scope and declare variables.
 Render result:
 ```html
 Index: 0, Item: Comps
-Index: 1, Item: Reapt
+Index: 1, Item: Repeat
 ```
 
 ### data
