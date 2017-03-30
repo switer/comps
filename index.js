@@ -87,8 +87,8 @@ function CompsFactory() {
 			recursive: true,
 			scope: function (scope) {
 				scope.$pagelet = scope.$pagelet || ''
-				scope.$patches = scope.$patches 
-					? scope.$patches.slice() 
+				scope.$patches = scope.$patches
+					? scope.$patches.slice()
 					: []
 			},
 			created: function () {
@@ -176,7 +176,7 @@ function CompsFactory() {
 					try {
 						var isObjectFormat = /^\s*\{/.test(dataStr)
 						var data = this.$scope.$execute(
-							isObjectFormat 
+							isObjectFormat
 								? dataStr
 								: '{' + dataStr + '}',
 								this.$scope.$data.$parent
@@ -243,7 +243,7 @@ function CompsFactory() {
 					try {
 						var isObjectFormat = /^\s*\{/.test(dataStr)
 						var data = this.$scope.$execute(
-							isObjectFormat 
+							isObjectFormat
 								? dataStr
 								: '{' + dataStr + '}',
 								this.$scope.$data.$parent
@@ -329,7 +329,7 @@ function CompsFactory() {
 								output = JSON.stringify(t)
 								break
 							} catch(e) {
-								
+
 							}
 						default:
 							output = result
@@ -394,6 +394,51 @@ function CompsFactory() {
 			},
 			inner: function() {
 				return this.$inner()
+			}
+		},
+		'repeat': {
+			paired: true,
+			recursive: true,
+			scope: true,
+			created: function() {
+				var attrs = this.$attributes
+				var itemsExpr = attrs.$items
+				if (!itemsExpr) {
+					return console.log('Tag "repeat" require "$items" value. ' + tagUtil.errorTrace(this))
+				}
+
+				this.$value = attrs.$as || '$value'
+				this.$index = attrs.$index || '$index'
+
+				try {
+					this.$items = this.$scope.$execute(itemsExpr)
+				} catch(e) {
+					console.log(
+						'"' + this.$raw + '" => ' + '"' + e.message + '" @tag: data'
+						+ tagUtil.errorTrace(this)
+					)
+				}
+			},
+			outer: function() {
+				return EMPTY_RESULT
+			},
+			inner: function() {
+				if (!this.$items || util.type(this.$items) != 'array') return ''
+				var ctx = this
+				function renderItem(scope) {
+					return ctx.$el.childNodes.map(function (n) {
+					    return ctx.$walk(n, scope)
+					}).join('')
+				}
+				return this.$items.map(function (item, index) {
+					var scope = ctx.$scope.$clone(true)
+					if (util.type(item) == 'object') {
+						util.extend(scope, item)
+					}
+					scope.$data[ctx.$value] = item
+					scope.$data[ctx.$index] = index
+					return renderItem(scope)
+				}).join('')
 			}
 		}
 	}
@@ -501,7 +546,7 @@ function CompsFactory() {
 			$chunks: []
 		})
 		var temp = Comps(util.extend({}, options, {
-			chunk: true,	// will convert chunk tag to chunk_spliter otherwise empty 
+			chunk: true,	// will convert chunk tag to chunk_spliter otherwise empty
 			scope: scope
 		}))
 		var cparts = temp.split(CHUNK_SPLITER)
@@ -602,7 +647,7 @@ function defaultComponentLoader (name, conf) {
     }
 }
 function defaultFileLoader (request, context, conf) {
-    var fpath = path.isAbsolute(request) 
+    var fpath = path.isAbsolute(request)
         ? request
         : path.join(context || conf.root || process.cwd(), request)
 

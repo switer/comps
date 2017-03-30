@@ -31,4 +31,5 @@ require('./spec-include.js')
 require('./spec-bigpipe.js')
 require('./spec-output.js')
 require('./spec-parser.js')
+require('./spec-tag.js')
 

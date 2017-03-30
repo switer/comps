@@ -59,12 +59,12 @@ Comps({
 
 #### config(name, value)
 - **Param**: name`<String>`
-- **Param**: value 
-    
+- **Param**: value
+
 Rendering configuration setter. Supporting properties:
 - **openTag** `<String>`
      Template syntax of open delimiter. Default *"{%"*.
-- **closeTag** `<String>` 
+- **closeTag** `<String>`
     Template syntax of close delimiter.Default: *"%}"*
 
 #### tag(name, def)
@@ -74,24 +74,24 @@ Rendering configuration setter. Supporting properties:
 - **Param**: def`<Object>`
     Tag configuration. Supporting properties:
 
-    - **scope** `<Boolean>`|`<Function>`  *Optional* 
+    - **scope** `<Boolean>`|`<Function>`  *Optional*
         Whether create a child-scope for the tag.
-        
+
     - **paired** `<Boolean>`  *Optional*
       Restrains the type of tag. if true, can't not using tag as self-closing. If false, the tag must be self-closing. Otherwise has not constraint.
-        
-    - **created** `<Function>` 
-        Call when tag is created.
-    
-    - **outer** `<Function>` 
-        Call when tag is rendered. Must **return** Array with two items, item1 is the open tag, item2 is the close tag. 
 
-    - **inner** `<Function>` 
+    - **created** `<Function>`
+        Call when tag is created.
+
+    - **outer** `<Function>`
+        Call when tag is rendered. Must **return** Array with two items, item1 is the open tag, item2 is the close tag.
+
+    - **inner** `<Function>`
         Call when tag's child template is rendered. Must **return** String.
 
-Context of defined method: 
-    
-- **$scope** `<Object>` 
+Context of defined method:
+
+- **$scope** `<Object>`
     Scope of current context, properties will be herited to child-scope.
 - **$el** `<Object>`
     AST node of the tag.
@@ -134,7 +134,7 @@ Create a `bigpipe` instance directly.
 #### componentLoader(loader)
 - **Param**: loader`<Function>`
 
-Custom component template file loader method. `loader` function will receive **id**`<String>` as param, **id** is the component id that given by tag's **$id** attribute. 
+Custom component template file loader method. `loader` function will receive **id**`<String>` as param, **id** is the component id that given by tag's **$id** attribute.
 Loader should return object as result, and result must contains properties:`request`, `content`.
 
 > Note: Only one loader work, it will overwrite last loader.
@@ -142,7 +142,7 @@ Loader should return object as result, and result must contains properties:`requ
 #### fileLoader(loader)
 - **Param**: loader`<Function>`
 
-Custom including template file loader method. `loader` function will receive **request**`<String>` and **context**`<String>`  as params. **request** is  **$path** attribute and **context** is the current directory path of the request. 
+Custom including template file loader method. `loader` function will receive **request**`<String>` and **context**`<String>`  as params. **request** is  **$path** attribute and **context** is the current directory path of the request.
 Loader should return object as result, and result must contains properties:`request`, `content`.
 
 > Note: Only one loader work, it will overwrite last loader.
@@ -211,7 +211,7 @@ bp.on('end', function () {
 })
 
 // will emit "header" chunk
-bp.set('title', 'xxx') 
+bp.set('title', 'xxx')
 setTimeout(function () {
     // will emit "list" chunk
     bp.set('list', [..])
@@ -239,7 +239,7 @@ bp.data.list = []
 bp.flush()
 ```
 
-End `bigpipe` manually, it flush remain chunks immediately but ignore waiting dependences: 
+End `bigpipe` manually, it flush remain chunks immediately but ignore waiting dependences:
 ```js
 bp.end()
 ```
@@ -298,29 +298,29 @@ var pagelet = require('./index.tpl')
 ## Options
 Options of rendering template with `comps(options)`:
 
-#### template 
+#### template
 - Type: `<String>`
 
 HTML template for rendering.
 
-#### pagelet 
-- Type: `<String>` 
+#### pagelet
+- Type: `<String>`
 - *Optional*
 
 Render those template including in pagelet tag. It compare `pagelet` option with pagelet tag's `$id`.
 See [Using pagelet](#using-pagelet).
 
-#### chunk 
-- Type: `<Boolean>` 
+#### chunk
+- Type: `<Boolean>`
 - *Optional*
 
-> Note: Chunk is enable default in `bigpipe` rendering.  
+> Note: Chunk is enable default in `bigpipe` rendering.
 
 If chunk is true, `Comps` will render Chunk tag to `CHUNK_SPLITER`, such as:  `<!--{% chunk /%}-->`.
 See [Using Bigpipe](#using-bigpipe).
 
 #### context
-- Type: `<String>` 
+- Type: `<String>`
 - *Optional*
 
 > Note: Using with `include` tag.
@@ -343,7 +343,7 @@ It will call `componentLoader` to loader component file by id "header".
 **Tag attributes**:
 - **$id**            Id name of the component for load component file.
 - **$tag**          Specify tag name of component wrapper tag. *Optional*
-- **$replace**   Using component wrapper tag of not, default `false`. Set to "`nomerge`" will not copy attributes to template container element, otherwise all attribute from the component tag will copy to template container element and overwrite exist attribute.*Optional* 
+- **$replace**   Using component wrapper tag of not, default `false`. Set to "`nomerge`" will not copy attributes to template container element, otherwise all attribute from the component tag will copy to template container element and overwrite exist attribute.*Optional*
 
 **Events**
 
@@ -352,7 +352,7 @@ It will call `componentLoader` to loader component file by id "header".
 - **beforecomponentload**(id, tagInstance)
 
 - **componentloaded**(id, tagInstance, result)
-        
+
     After load, will get request/context of the component in "tagInstance", changing will change render result.
 
 **Insertion point**
@@ -381,7 +381,7 @@ Will render to:
 
 
 ### pagelet
-Pagelet tag is using to render template only that  included in pagelet if `pagelet` option is given. 
+Pagelet tag is using to render template only that  included in pagelet if `pagelet` option is given.
 
 **Example**:
 ```html
@@ -396,7 +396,7 @@ If pagelet of rendering options is "header", it will render the template include
 - **$tag**          Specify tag name of pagelet wrapper tag. *Optional*
 - **$wrap**         Using pagelet wrapper tag of not, default `false`. *Optional*
 
-### include 
+### include
 Inline another HTML template file into current template.
 
 **Example**:
@@ -411,13 +411,13 @@ Inline another HTML template file into current template.
 - **beforefileload(request, context, tagInstance)**
 
 - **fileloaded(result, tagInstance)**
-        
+
     After load, will get request/context of the file in "tagInstance", changing will change render result.
 
 **Passing data**
 
 ```html
-{% include $path="./header.tpl" $data="title: 'Comps passing data from include'"/%}
+{% include $path="./header.tpl" $data="{title: 'Comps passing data from include'}"/%}
 ```
 
 Using in `header.tpl`
@@ -431,7 +431,7 @@ Will render to:
 <div class="header">Comps passing data from include</div>
 ```
 
-### chunk 
+### chunk
 Bigpipe chunk split tag, and declare data dependences of above chunk.
 
 **Example**:
@@ -452,7 +452,7 @@ Execute expression and output data that given by component.
 
 Declare data in component tag:
 ```html
-{% component $id="main" $data="title: 'Output ag', content: 'Data from components' " /%}
+{% component $id="main" $data="{ title: 'Output ag', content: 'Data from components' }" /%}
 ```
 
 Templte of `"main"` component:
@@ -480,8 +480,8 @@ Build in properties and methods:
 Branch logic, it will render contents if condition's value is truly.
 
 ```html
-{% component $id="main" 
-    $data="isShowText: true" 
+{% component $id="main"
+    $data="{ isShowText: true }"
 /%}
 ```
 
@@ -504,12 +504,27 @@ Render result:
 Has same build in properties and methods of [output(>)](#output)
 
 
+### repeat
+Create data scope and declare variables.
+
+```html
+{% repeat $items="['Comps','Repeat']" $as="item" $index="index" %}
+    Index: {%> index /%}, Item: {%> item /%}
+{% /data %}
+```
+
+Render result:
+```html
+Index: 0, Item: Comps
+Index: 1, Item: Reapt
+```
+
 ### data
 Create data scope and declare variables.
 
 ```html
 {% data name="send" %}
-    My name: {%> name /%} 
+    My name: {%> name /%}
 {% /data %}
 ```
 

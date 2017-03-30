@@ -73,7 +73,7 @@ describe('Include', function () {
     it('Passing data', function () {
         var r = comps({
             context: __dirname,
-            template: '{% include $path="tpls/include-case-6.tpl" $data="outerContent: \'hello\'"/%}'
+            template: '{% include $path="tpls/include-case-6.tpl" $data="{ outerContent: \'hello\' }"/%}'
         })
         assert.equal(r.trim(), '<div>hello</div>')
     })
